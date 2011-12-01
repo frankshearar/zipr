@@ -3,6 +3,18 @@ require 'rantly/property'
 require 'rspec'
 
 module Zipr
+  describe Zipper do
+    it "should allow zipping on a structure" do
+      Zipper.new(Leaf.new(1)).should_not be_nil
+    end
+
+    it "should record an error going down on a leaf" do
+      Zipper.new(Leaf.new(1)).down.should be_left
+    end
+  end
+end
+
+module Zipr
   class Tree
     def branch?
       false
@@ -70,19 +82,6 @@ module Zipr
     it "should have an immutable value" do
       l = Leaf.new([])
       ->{l.value << 1}.should raise_error
-    end
-  end
-end
-
-
-module Zipr
-  describe Zipper do
-    it "should allow zipping on a structure" do
-      Zipper.new(Leaf.new(1)).should_not be_nil
-    end
-
-    it "should record an error going down on a leaf" do
-      Zipper.new(Leaf.new(1)).down.should be_left
     end
   end
 end
