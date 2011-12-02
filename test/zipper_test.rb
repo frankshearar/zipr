@@ -5,11 +5,28 @@ require 'rspec'
 module Zipr
   describe Zipper do
     it "should allow zipping on a structure" do
-      Zipper.new(Leaf.new(1)).should_not be_nil
+      Zipper.zip_on(Leaf.new(1), ->{false}, ->{[]}, ->{nil}).should_not be_nil
     end
 
     it "should record an error going down on a leaf" do
-      Zipper.new(Leaf.new(1)).down.should be_left
+      l = Leaf.new(1).zipper.safe_down
+      l.should be_left
+      l.error.should == :down_at_leaf
+    end
+
+    it "should allow down on a branch point" do
+      t = Node.new(nil, [Leaf.new(1)])
+      z = t.zipper.safe_down
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.class.should == Zipper
+      new_zipper.value.class.should == Leaf
+      new_zipper.value.value.should == 1
+    end
+
+    it "should root on a trivial structure" do
+      t = Leaf.new(1)
+      t.zipper.root.should == t
     end
   end
 end
@@ -18,6 +35,18 @@ module Zipr
   class Tree
     def branch?
       false
+    end
+
+    def zipper
+      mknode = -> value,children {
+        if children.empty? then
+          Leaf(value)
+        else
+          Node.new(value, children)
+        end
+      }
+
+      Zipper.zip_on(self, :branch?, :children, mknode)
     end
   end
 
