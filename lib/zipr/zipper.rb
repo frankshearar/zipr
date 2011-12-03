@@ -43,7 +43,15 @@ module Zipr
     def down
       v = safe_down
       case v
-        when Left then raise v.error
+        when Left then raise ZipperNavigationError.new(v.error)
+        when Right then v.value
+      end
+    end
+
+    def up
+      v = safe_up
+      case v
+        when Left then raise ZipperNavigationError.new(v.error)
         when Right then v.value
       end
     end
@@ -68,6 +76,18 @@ module Zipr
                              @mknode))
       else
         Left.new(:down_at_leaf)
+      end
+    end
+
+    def safe_up
+      if context.root? then
+        Left.new(:up_at_root)
+      else
+        Right.new(Zipper.new(context.visited_nodes.last,
+                             context.path,
+                             @branch,
+                             @children,
+                             @mknode))
       end
     end
   end
@@ -147,6 +167,18 @@ module Zipr
 
     def to_s
       "Method #{method_name.inspect} called with unsupported parameter type #{parameter.class.name}"
+    end
+  end
+
+  class ZipperNavigationError < Exception
+    attr_reader :error
+
+    def initialize(symbol)
+      @error = symbol
+    end
+
+    def to_s
+      "Navigation error - #{error.inspect}"
     end
   end
 end
