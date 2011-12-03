@@ -57,7 +57,7 @@ module Zipr
 
     it "should have down then up be an idempotent navigation" do
       property_of {
-        t = tree
+        t = sized(50) { tree }
         guard(t.depth > 1)
         t
       }.check {|t|
@@ -78,13 +78,20 @@ class Rantly
   end
 
   def tree(n = self.size)
-    # n is maximum depth
-    case n
-      when 0 then Zipr::EmptyTree.new
-      when 1 then Zipr::Leaf.value(any)
+    if (n <= 0) then
+      Zipr::EmptyTree.new
+    elsif (n == 1) then
+      Zipr::Leaf.value(any)
     else
       num_subtrees = integer(0..max_subtrees)
-      Zipr::Node.new(any, (1..num_subtrees).map {|i_ignored| tree(n - 1)})
+      subtrees = []
+      sz = n
+      while (sz > 0) do
+        t = tree(integer(0..(n - 1)))
+        subtrees << t
+        sz -= t.size
+      end
+      Zipr::Node.new(any, subtrees)
     end
   end
 
@@ -208,7 +215,7 @@ module Zipr
     it "should generate different trees" do
       trees = []
       property_of {
-        tree
+        sized(50) { tree }
       }.check {|t|
         trees << t
       }
