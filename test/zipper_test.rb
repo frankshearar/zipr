@@ -55,10 +55,41 @@ module Zipr
       new_zipper.value.tag.should == 1
     end
 
+    it "should have down then up be an idempotent navigation" do
+      property_of {
+        t = tree
+        guard(t.depth > 1)
+        t
+      }.check {|t|
+        t.zipper.down.up.value.should == t
+      }
+    end
+
     it "should root on a trivial structure" do
       t = Leaf.new(1)
       t.zipper.root.should == t
     end
+  end
+end
+
+class Rantly
+  def max_subtrees
+    10
+  end
+
+  def tree(n = self.size)
+    # n is maximum depth
+    case n
+      when 0 then Zipr::EmptyTree.new
+      when 1 then Zipr::Leaf.value(any)
+    else
+      num_subtrees = integer(0..max_subtrees)
+      Zipr::Node.new(any, (1..num_subtrees).map {|i_ignored| tree(n - 1)})
+    end
+  end
+
+  def any
+    choose(integer, string, boolean)
   end
 end
 
@@ -172,6 +203,19 @@ module Zipr
       0
     end
   end
+
+  describe TaggedTree do
+    it "should generate different trees" do
+      trees = []
+      property_of {
+        tree
+      }.check {|t|
+        trees << t
+      }
+      trees.zip(trees.drop(1) + trees.take(1)) { |i, j|
+        i.should_not == j
+      }
+    end
   end
 
   describe Node do
