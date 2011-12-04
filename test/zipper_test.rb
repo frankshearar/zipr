@@ -5,7 +5,18 @@ require 'rspec'
 module Zipr
   describe Zipper do
     it "should allow zipping on a structure" do
-      Zipper.zip_on(Leaf.new(1), ->{false}, ->{[]}, ->{nil}).should_not be_nil
+      Zipper.zip_on(Leaf.new(1), ->x{false}, ->x{[]}, ->x,kids{nil}).should_not be_nil
+    end
+
+    it "should allow zipping over an arbitrary structure" do
+      z = Zipper.zip_on([1, [2, 3], 4], ->x{x.kind_of? Array}, ->x{x}, ->x,kids{ :as_yet_unused })
+      z1 = z.down
+      z1.value.should == 1
+      z2 = z1.right
+      z2.value.should == [2, 3]
+      z3 = z2.down
+      z3.value.should == 2
+      z3.safe_down.should be_left
     end
 
     it "should record an error going down on a leaf" do
