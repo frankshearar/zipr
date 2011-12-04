@@ -48,6 +48,22 @@ module Zipr
       end
     end
 
+    def left
+      v = safe_left
+      case v
+        when Left then raise ZipperNavigationError.new(v.error)
+        when Right then v.value
+      end
+    end
+
+    def right
+      v = safe_right
+      case v
+        when Left then raise ZipperNavigationError.new(v.error)
+        when Right then v.value
+      end
+    end
+
     def up
       v = safe_up
       case v
@@ -76,6 +92,40 @@ module Zipr
                              @mknode))
       else
         Left.new(:down_at_leaf)
+      end
+    end
+
+    def safe_left
+      if context.left_nodes.empty? then
+        Left.new(:left_at_leftmost)
+      else
+        Right.new(Zipper.new(context.left_nodes.last,
+                             Context.new(context,
+                                         value,
+                                         context.left_nodes[0..-2],
+                                         [value] + context.right_nodes,
+                                         context.visited_nodes + [value],
+                                         false),
+                             @branch,
+                             @children,
+                             @mknode))
+      end
+    end
+
+    def safe_right
+      if context.right_nodes.empty? then
+        Left.new(:right_at_rightmost)
+      else
+        Right.new(Zipper.new(context.right_nodes.first,
+                             Context.new(context,
+                                         value,
+                                         context.left_nodes + [value],
+                                         context.right_nodes.drop(1),
+                                         context.visited_nodes + [value],
+                                         false),
+                             @branch,
+                             @children,
+                             @mknode))
       end
     end
 

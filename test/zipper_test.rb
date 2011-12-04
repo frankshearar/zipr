@@ -65,6 +65,98 @@ module Zipr
       }
     end
 
+    it "should have unsafe up on the root node fail" do
+      ->{
+        Leaf.new(1).zipper.up
+      }.should raise_error(ZipperNavigationError) { |e|
+        e.to_s.should == "Navigation error - :up_at_root"
+      }
+    end
+
+    it "should have left fail on a leftmost child" do
+      t = Node.new(1, [Leaf.new(1)])
+      z = t.zipper.down.safe_left
+      z.should be_left
+      z.error.should == :left_at_leftmost
+    end
+
+    it "should have left most to the next left sibling" do
+      t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
+      z = t.zipper.down.right.safe_left
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.value.class.should == Leaf
+      new_zipper.value.value.should == 1
+    end
+
+    it "should have unsafe left fail on a leftmost child" do
+      t = Node.new(1, [Leaf.new(1)])
+      ->{
+        z = t.zipper.down.left
+      }.should raise_error(ZipperNavigationError) { |e|
+        e.to_s.should == "Navigation error - :left_at_leftmost"
+      }
+    end
+
+    it "should have right move to the next right sibling" do
+      t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
+      z = t.zipper.down.safe_right
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.class.should == Zipper
+      new_zipper.value.class.should == Leaf
+      new_zipper.value.value.should == 2
+    end
+
+    it "should have unsafe right move to the next right sibling" do
+      t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
+      z = t.zipper.down.right
+      z.class.should == Zipper
+      z.value.class.should == Leaf
+      z.value.value.should == 2
+    end
+
+    it "should have right fail on the rightmost child" do
+      t = Node.new(1, [Leaf.new(1)])
+      z = t.zipper.down.safe_right
+      z.should be_left
+      z.error.should == :right_at_rightmost
+    end
+
+    it "should have unsafe right fail on the rightmost child" do
+      t = Node.new(1, [Leaf.new(1)])
+      z = t.zipper.down
+      ->{
+        z.right
+      }.should raise_error(ZipperNavigationError) { |e|
+        e.to_s.should == "Navigation error - :right_at_rightmost"
+      }
+    end
+
+    it "should have right then left be an idempotent navigation" do
+      property_of {
+        t = sized(50) { tree }
+        guard(t.branch?)
+        guard(t.children.length > 1)
+        t
+      }.check {|t|
+        z = t.zipper.down
+        z.right.left.value.should == z.value
+      }
+    end
+
+    it "should have left then right be an idempotent navigation" do
+      property_of {
+        t = sized(5) { tree }
+        guard(t.branch?)
+        guard(t.children.length > 1)
+        t
+      }.check {|t|
+        z = t.zipper.down.right
+        z.left.right.value.should == z.value
+      }
+    end
+
     it "should root on a trivial structure" do
       t = Leaf.new(1)
       t.zipper.root.should == t
