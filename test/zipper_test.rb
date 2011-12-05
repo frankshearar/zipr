@@ -200,9 +200,36 @@ module Zipr
       }
     end
 
+    it "should allow editing of a root node" do
+      t = Tree.new(1, [])
+      z = t.zipper.safe_replace(Tree.new(2, []))
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.class.should == Zipper
+      new_zipper.value.should == Tree.new(2, [])
+      new_zipper.root.should == Tree.new(2, [])
+    end
+
+    it "should allow 'unsafe' editing of a root node" do
+      t = Tree.new(1, [])
+      z = t.zipper.replace(Tree.new(2, []))
+      z.class.should == Zipper
+      z.value.should == Tree.new(2, [])
+      z.root.should == Tree.new(2, [])
+    end
+
     it "should root on a trivial structure" do
       t = Leaf.new(1)
       t.zipper.root.should == t
+    end
+
+    it "should root on a deep structure" do
+      t = Node.new(:root, [Node.new(:left, [Leaf.new(1)]), Node.new(:right, [Leaf.new(2)])])
+      t.zipper.down.down.root.should == t
+    end
+
+    it "should root on an altered structure" do
+      t = Node.new(:root, [Node.new(:left, [Leaf.new(1)]), Node.new(:right, [Leaf.new(2)])])
     end
   end
 end
@@ -236,6 +263,42 @@ class Rantly
 end
 
 module Zipr
+  class Tree
+    attr_reader :children
+    attr_reader :value
+
+    def initialize(value, array)
+      @children = array
+      @value = value
+    end
+
+    def ==(obj)
+      case obj
+        when Tree then value == obj.value and children == obj.children
+        else false
+      end
+    end
+
+    def hash
+      (41 * (41 * 1) + value.hash) + children.hash
+    end
+
+    def branch?
+      !children.empty?
+    end
+
+    def zipper
+      mknode = -> value,children {
+        case value
+          when Tree then Tree.new(value.value, children)
+          else Tree.new(value, children)
+        end
+      }
+
+      Zipper.zip_on(self, :branch?, :children, mknode)
+    end
+  end
+
   class TaggedTree
     def branch?
       false
@@ -244,7 +307,7 @@ module Zipr
     def zipper
       mknode = -> value,children {
         if children.empty? then
-          Leaf(value)
+          Leaf.new(value)
         else
           Node.new(value, children)
         end

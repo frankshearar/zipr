@@ -72,9 +72,21 @@ module Zipr
       end
     end
 
+    def replace(new_node)
+      safe_replace(new_node).value
+    end
+
     # Return the possibly mutated version of the structure.
     def root
-      @value
+      if context.root? then
+        @value
+      else
+        if context.changed? then
+          __changed_up.__changed_root
+        else
+          up.root
+        end
+      end
     end
 
     # Move the context to the first (leftmost) child node.
@@ -133,6 +145,19 @@ module Zipr
       end
     end
 
+    def safe_replace(new_node)
+      Right.new(Zipper.new(new_node,
+                           Context.new(context,
+                                       value,
+                                       [],
+                                       [],
+                                       context.visited_nodes + [value],
+                                       true),
+                           @branch,
+                           @children,
+                           @mknode))
+    end
+
     def safe_up
       if context.root? then
         Left.new(:up_at_root)
@@ -144,8 +169,37 @@ module Zipr
                              @mknode))
       end
     end
+    
+    def __changed_root
+      if context.root? then
+        @value
+      else
+        __changed_up.value.__changed_root
+      end
+    end
+    
+    def __changed_up
+      v = __safe_changed_up
+      case v
+        when Left then raise ZipperNavigationError.new(v.error)
+        when Right then v.value
+      end      
+    end
+    
+    def __safe_changed_up
+      if context.root? then
+        Left.new(:up_at_root)
+      else
+        Right.new(Zipper.new(mknode(value,
+                                    context.left_nodes + context.right_nodes),
+                             context.path,
+                             @branch,
+                             @children,
+                             @mknode))
+      end
+    end
   end
-
+  
   # The context of a value in a structure.
   class BaseContext
     attr_reader :left_nodes
