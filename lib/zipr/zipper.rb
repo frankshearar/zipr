@@ -96,7 +96,9 @@ module Zipr
     end
 
     def safe_left
-      if context.left_nodes.empty? then
+      if context.root? then
+        Left.new(:left_at_root)
+      elsif context.left_nodes.empty? then
         Left.new(:left_at_leftmost)
       else
         Right.new(Zipper.new(context.left_nodes.last,
@@ -113,7 +115,9 @@ module Zipr
     end
 
     def safe_right
-      if context.right_nodes.empty? then
+      if context.root? then
+        Left.new(:right_at_root)
+      elsif context.right_nodes.empty? then
         Left.new(:right_at_rightmost)
       else
         Right.new(Zipper.new(context.right_nodes.first,

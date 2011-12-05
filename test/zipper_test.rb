@@ -91,6 +91,22 @@ module Zipr
       z.error.should == :left_at_leftmost
     end
 
+    it "should have left fail on root node" do
+      t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
+      z = t.zipper.safe_left
+      z.should be_left
+      z.error.should == :left_at_root
+    end
+
+    it "should have unsafe left fail on root node" do
+      t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
+      ->{
+        t.zipper.left
+      }.should raise_error(ZipperNavigationError) { |e|
+        e.to_s.should == "Navigation error - :left_at_root"
+      }
+    end
+
     it "should have left most to the next left sibling" do
       t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
       z = t.zipper.down.right.safe_left
@@ -117,6 +133,22 @@ module Zipr
       new_zipper.class.should == Zipper
       new_zipper.value.class.should == Leaf
       new_zipper.value.value.should == 2
+    end
+
+    it "should have right fail on root node" do
+      t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
+      z = t.zipper.safe_right
+      z.should be_left
+      z.error.should == :right_at_root
+    end
+
+    it "should have unsafe right fail on root node" do
+      t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
+      ->{
+        t.zipper.right
+      }.should raise_error(ZipperNavigationError) { |e|
+        e.to_s.should == "Navigation error - :right_at_root"
+      }
     end
 
     it "should have unsafe right move to the next right sibling" do
