@@ -7,9 +7,9 @@ The framework supplies two ways of navigating through a structure. "Safe navigat
 
 Unsafe navigation's suited for when you know the precise path to some node, allowing for terse code:
 
-> t = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
-> z = t.zipper.down.down
-> z.value.should == 2
+    t = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+    z = t.zipper.down.down
+    z.value.should == 2
 
 Safe navigation's suited for exploring a structure whose structure you don't know.
 
@@ -23,9 +23,9 @@ When we create the zipper, we give it:
 
 Those three behaviours may be a Proc or a Symbol naming a method:
 
-> t = Tree.new(2, [Tree.new(1, []), Tree.new(3, [])])
-> mknode = ->value, children {Tree.new(value, children)}
-> Zipper.new(t, RootContext.new, ->x{!x.children.empty?}, :children, mknode)
+    t = Tree.new(2, [Tree.new(1, []), Tree.new(3, [])])
+    mknode = ->value, children {Tree.new(value, children)}
+    Zipper.new(t, RootContext.new, ->x{!x.children.empty?}, :children, mknode)
 
 The sample structures provide their own convenience :zipper methods.
 
