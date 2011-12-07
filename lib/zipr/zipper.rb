@@ -94,7 +94,6 @@ module Zipr
       if branch?(value) then
         Right.new(Zipper.new(children(value).first,
                              Context.new(context,
-                                         value,
                                          [],
                                          children(value).drop(1),
                                          context.visited_nodes + [value],
@@ -115,7 +114,6 @@ module Zipr
       else
         Right.new(Zipper.new(context.left_nodes.last,
                              Context.new(context,
-                                         value,
                                          context.left_nodes[0..-2],
                                          [value] + context.right_nodes,
                                          context.visited_nodes + [value],
@@ -134,7 +132,6 @@ module Zipr
       else
         Right.new(Zipper.new(context.right_nodes.first,
                              Context.new(context,
-                                         value,
                                          context.left_nodes + [value],
                                          context.right_nodes.drop(1),
                                          context.visited_nodes + [value],
@@ -148,7 +145,6 @@ module Zipr
     def safe_replace(new_node)
       Right.new(Zipper.new(new_node,
                            Context.new(context,
-                                       value,
                                        [],
                                        [],
                                        context.visited_nodes + [value],
@@ -205,7 +201,6 @@ module Zipr
     attr_reader :left_nodes
     attr_reader :path
     attr_reader :right_nodes
-    attr_reader :value
     attr_reader :visited_nodes
 
     def changed?
@@ -219,9 +214,8 @@ module Zipr
 
   # A one-hole context in some arbitrary hierarchical structure
   class Context < BaseContext
-    def initialize(path, value, left_nodes, right_nodes, visited_nodes, changed)
+    def initialize(path, left_nodes, right_nodes, visited_nodes, changed)
       @path = path
-      @value = value
       @left_nodes = left_nodes
       @right_nodes = right_nodes
       @visited_nodes = visited_nodes
