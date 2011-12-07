@@ -89,16 +89,13 @@ module Zipr
     # Move the context to the first (leftmost) child node.
     def safe_down
       if branch?(value) then
-        Right.new(Zipper.new(children(value).first,
+        Right.new(new_zipper(children(value).first,
                              Context.new(context,
                                          value,
                                          [],
                                          children(value).drop(1),
                                          context.visited_nodes + [value],
-                                         false),
-                             @branch,
-                             @children,
-                             @mknode))
+                                         false)))
       else
         Left.new(:down_at_leaf)
       end
@@ -110,16 +107,13 @@ module Zipr
       elsif context.left_nodes.empty? then
         Left.new(:left_at_leftmost)
       else
-        Right.new(Zipper.new(context.left_nodes.last,
+        Right.new(new_zipper(context.left_nodes.last,
                              Context.new(context,
                                          value,
                                          context.left_nodes[0..-2],
                                          [value] + context.right_nodes,
                                          context.visited_nodes + [value],
-                                         false),
-                             @branch,
-                             @children,
-                             @mknode))
+                                         false)))
       end
     end
 
@@ -129,42 +123,33 @@ module Zipr
       elsif context.right_nodes.empty? then
         Left.new(:right_at_rightmost)
       else
-        Right.new(Zipper.new(context.right_nodes.first,
+        Right.new(new_zipper(context.right_nodes.first,
                              Context.new(context,
                                          value,
                                          context.left_nodes + [value],
                                          context.right_nodes.drop(1),
                                          context.visited_nodes + [value],
-                                         false),
-                             @branch,
-                             @children,
-                             @mknode))
+                                         false)))
       end
     end
 
     def safe_replace(new_node)
-      Right.new(Zipper.new(new_node,
+      Right.new(new_zipper(new_node,
                            # This could be a Context or a RootContext
                            context.class.new(context.path,
                                              context.parent_node,
                                              context.left_nodes,
                                              context.right_nodes,
                                              context.visited_nodes,
-                                             true),
-                           @branch,
-                           @children,
-                           @mknode))
+                                             true)))
     end
 
     def safe_up
       if context.root? then
         Left.new(:up_at_root)
       else
-        Right.new(Zipper.new(context.visited_nodes.last,
-                             context.path,
-                             @branch,
-                             @children,
-                             @mknode))
+        Right.new(new_zipper(context.visited_nodes.last,
+                             context.path))
       end
     end
     
@@ -188,13 +173,15 @@ module Zipr
       if context.root? then
         Left.new(:up_at_root)
       else
-        Right.new(Zipper.new(mknode(context.parent_node,
+        Right.new(new_zipper(mknode(context.parent_node,
                                     context.left_nodes + [value] + context.right_nodes),
-                             context.path,
-                             @branch,
-                             @children,
-                             @mknode))
+                             context.path))
       end
+    end
+
+    private
+    def new_zipper(value, context)
+      Zipper.new(value, context, @branch, @children, @mknode)
     end
   end
   
