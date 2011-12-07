@@ -273,6 +273,14 @@ module Zipr
       @value = value
     end
 
+    def to_s
+      if children.empty? then
+        @value.inspect
+      else
+        "#{value.inspect} [#{children.map{|c| c.to_s}.join(", ")}]"
+      end
+    end
+
     def ==(obj)
       case obj
         when Tree then value == obj.value and children == obj.children
