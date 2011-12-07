@@ -83,17 +83,7 @@ module Zipr
     end
 
     def safe_change(&block)
-      Right.new(Zipper.new(block.call(value),
-                           # This could be a Context or a RootContext
-                           context.class.new(context.path,
-                                             context.parent_node,
-                                             context.left_nodes,
-                                             context.right_nodes,
-                                             context.visited_nodes,
-                                             true),
-                           @branch,
-                           @children,
-                           @mknode))
+      safe_replace(block.call(value))
     end
 
     # Move the context to the first (leftmost) child node.
