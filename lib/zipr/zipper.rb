@@ -170,7 +170,7 @@ module Zipr
       if context.root? then
         @value
       else
-        __changed_up.value.__changed_root
+        __changed_up.__changed_root
       end
     end
     
