@@ -1,4 +1,5 @@
 require 'zipr/either'
+require 'zipr/unsupported-operation'
 
 module Zipr
   class Zipper
@@ -41,35 +42,23 @@ module Zipr
     end
 
     def down
-      v = safe_down
-      case v
-        when Left then raise ZipperNavigationError.new(v.error)
-        when Right then v.value
-      end
+      safe_down.either(->r{r.value},
+                       ->l{raise ZipperNavigationError.new(l.error)})
     end
 
     def left
-      v = safe_left
-      case v
-        when Left then raise ZipperNavigationError.new(v.error)
-        when Right then v.value
-      end
+      safe_left.either(->r{r.value},
+                       ->l{raise ZipperNavigationError.new(l.error)})
     end
 
     def right
-      v = safe_right
-      case v
-        when Left then raise ZipperNavigationError.new(v.error)
-        when Right then v.value
-      end
+      safe_right.either(->r{r.value},
+                        ->l{raise ZipperNavigationError.new(l.error)})
     end
 
     def up
-      v = safe_up
-      case v
-        when Left then raise ZipperNavigationError.new(v.error)
-        when Right then v.value
-      end
+      safe_up.either(->r{r.value},
+                     ->l{raise ZipperNavigationError.new(l.error)})
     end
 
     def replace(new_node)
@@ -255,20 +244,6 @@ module Zipr
 
     def visited_nodes
       []
-    end
-  end
-
-  class UnsupportedOperation < Exception
-    attr_reader :method_name
-    attr_reader :parameter
-
-    def initialize(method_name, param)
-      @method_name = method_name
-      @parameter = param
-    end
-
-    def to_s
-      "Method #{method_name.inspect} called with unsupported parameter type #{parameter.class.name}"
     end
   end
 
