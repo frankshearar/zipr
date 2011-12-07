@@ -227,6 +227,12 @@ module Zipr
       new_zipper.root.should == Tree.new(1, [Tree.new(3, [])])
     end
 
+    it "should allow editing of a node" do
+      t = Node.new(1, [Leaf.new(1)])
+      z = t.zipper.down.change {|n| Leaf.new(n.value + 1)}
+      z.root.should == Node.new(1, [Leaf.new(2)])
+    end
+
     it "should root on a trivial structure" do
       t = Leaf.new(1)
       t.zipper.root.should == t
@@ -328,7 +334,7 @@ module Zipr
         if children.empty? then
           Leaf.new(value)
         else
-          Node.new(value, children)
+          Node.new(value.tag, children)
         end
       }
 
