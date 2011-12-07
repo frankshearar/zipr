@@ -7,7 +7,7 @@ module Zipr
     attr_reader :context
 
     def self.zip_on(node, branch_fn, children_fn, mknode_fn)
-      Zipper.new(node, RootContext.new, branch_fn, children_fn, mknode_fn)
+      Zipper.new(node, Context.root_context, branch_fn, children_fn, mknode_fn)
     end
 
     def initialize(value, context, branch, children, mknode)
@@ -83,6 +83,7 @@ module Zipr
       if branch?(value) then
         Right.new(Zipper.new(children(value).first,
                              Context.new(context,
+                                         value,
                                          [],
                                          children(value).drop(1),
                                          context.visited_nodes + [value],
@@ -103,6 +104,7 @@ module Zipr
       else
         Right.new(Zipper.new(context.left_nodes.last,
                              Context.new(context,
+                                         value,
                                          context.left_nodes[0..-2],
                                          [value] + context.right_nodes,
                                          context.visited_nodes + [value],
@@ -121,6 +123,7 @@ module Zipr
       else
         Right.new(Zipper.new(context.right_nodes.first,
                              Context.new(context,
+                                         value,
                                          context.left_nodes + [value],
                                          context.right_nodes.drop(1),
                                          context.visited_nodes + [value],
@@ -133,11 +136,13 @@ module Zipr
 
     def safe_replace(new_node)
       Right.new(Zipper.new(new_node,
-                           Context.new(context,
-                                       [],
-                                       [],
-                                       context.visited_nodes + [value],
-                                       true),
+                           # This could be a Context or a RootContext
+                           context.class.new(context.path,
+                                             context.parent_node,
+                                             context.left_nodes,
+                                             context.right_nodes,
+                                             context.visited_nodes,
+                                             true),
                            @branch,
                            @children,
                            @mknode))
@@ -175,8 +180,8 @@ module Zipr
       if context.root? then
         Left.new(:up_at_root)
       else
-        Right.new(Zipper.new(mknode(value,
-                                    context.left_nodes + context.right_nodes),
+        Right.new(Zipper.new(mknode(context.parent_node,
+                                    context.left_nodes + [value] + context.right_nodes),
                              context.path,
                              @branch,
                              @children,
@@ -185,26 +190,32 @@ module Zipr
     end
   end
   
-  # The context of a value in a structure.
-  class BaseContext
+  # A one-hole context in some arbitrary hierarchical structure
+  class Context
     attr_reader :left_nodes
+    attr_reader :parent_node
     attr_reader :path
     attr_reader :right_nodes
     attr_reader :visited_nodes
 
-    def changed?
-      raise ":changed? not defined for #{self.class.name}"
+    def self.root_context
+      # This lets us avoid unsightly conditionals in the zipper: the path of no
+      # path is no path. Zipping up isn't a problem because :safe_up checks
+      # :root?.
+      if @root_context.nil? then
+        @root_context = RootContext.new(self,
+                                        :you_should_never_see_the_parent_node_of_a_RootContext,
+                                        [],
+                                        [],
+                                        [],
+                                        false)
+      end
+      @root_context
     end
 
-    def root?
-      false
-    end
-  end
-
-  # A one-hole context in some arbitrary hierarchical structure
-  class Context < BaseContext
-    def initialize(path, left_nodes, right_nodes, visited_nodes, changed)
+    def initialize(path, parent_node, left_nodes, right_nodes, visited_nodes, changed)
       @path = path
+      @parent_node = parent_node
       @left_nodes = left_nodes
       @right_nodes = right_nodes
       @visited_nodes = visited_nodes
@@ -214,36 +225,17 @@ module Zipr
     def changed?
       @changed
     end
+
+    def root?
+      false
+    end
   end
 
   # Marker class, indicating that we've not navigated anywhere or mutated
   # anything yet.
-  class RootContext < BaseContext
-    def changed?
-      false
-    end
-
-    def left_nodes
-      []
-    end
-
-    def path
-      #This lets us avoid unsightly conditionals in the zipper: the path of no
-      # path is no path. Zipping up isn't a problem because :safe_up checks
-      # :root?.
-      self
-    end
-
+  class RootContext < Context
     def root?
       true
-    end
-
-    def right_nodes
-      []
-    end
-
-    def visited_nodes
-      []
     end
   end
 
