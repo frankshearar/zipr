@@ -230,7 +230,9 @@ module Zipr
     end
 
     it "should root on an altered structure" do
-      t = Node.new(:root, [Node.new(:left, [Leaf.new(1)]), Node.new(:right, [Leaf.new(2)])])
+      t = Tree.new(2, [Tree.new(1, []), Tree.new(3, [])])
+      z = t.zipper.down.replace(Tree.new(0, []))
+      z.root.should == Tree.new(2, [Tree.new(0, []), Tree.new(3, [])])
     end
   end
 end
