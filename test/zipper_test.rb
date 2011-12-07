@@ -212,10 +212,11 @@ module Zipr
 
     it "should allow 'unsafe' editing of a root node" do
       t = Tree.new(1, [])
-      z = t.zipper.replace(Tree.new(2, []))
+      replacement = Tree.new(2, [])
+      z = t.zipper.replace(replacement)
       z.class.should == Zipper
-      z.value.should == Tree.new(2, [])
-      z.root.should == Tree.new(2, [])
+      z.value.should == replacement
+      z.root.should == replacement
     end
 
     it "should root on a trivial structure" do
