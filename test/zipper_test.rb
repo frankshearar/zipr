@@ -200,7 +200,7 @@ module Zipr
       }
     end
 
-    it "should allow editing of a root node" do
+    it "should allow replacing of a root node" do
       t = Tree.new(1, [])
       z = t.zipper.safe_replace(Tree.new(2, []))
       z.should be_right
@@ -210,13 +210,21 @@ module Zipr
       new_zipper.root.should == Tree.new(2, [])
     end
 
-    it "should allow 'unsafe' editing of a root node" do
+    it "should allow 'unsafe' replacing of a root node" do
       t = Tree.new(1, [])
       replacement = Tree.new(2, [])
       z = t.zipper.replace(replacement)
       z.class.should == Zipper
       z.value.should == replacement
       z.root.should == replacement
+    end
+
+    it "should allow replacing of a child node" do
+      t = Tree.new(1, [Tree.new(2, [])])
+      z = t.zipper.down.safe_replace(Tree.new(3, []))
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.root.should == Tree.new(1, [Tree.new(3, [])])
     end
 
     it "should root on a trivial structure" do
