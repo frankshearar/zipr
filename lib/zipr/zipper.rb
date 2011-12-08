@@ -69,6 +69,10 @@ module Zipr
       safe_insert_child(new_node).value
     end
 
+    def insert_left(new_node)
+      safe_insert_left(new_node).value
+    end
+
     def replace(new_node)
       safe_replace(new_node).value
     end
@@ -92,6 +96,16 @@ module Zipr
 
     def safe_insert_child(new_node)
       safe_replace(mknode(value, [new_node] + children(value)))
+    end
+
+    def safe_insert_left(new_node)
+      Right.new(new_zipper(value,
+                           Context.new(context.path,
+                                       context.parent_node,
+                                       context.left_nodes + [new_node],
+                                       context.right_nodes,
+                                       context.visited_nodes,
+                                       true)))
     end
 
     # Move the context to the first (leftmost) child node.
