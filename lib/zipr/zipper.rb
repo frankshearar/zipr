@@ -206,11 +206,8 @@ module Zipr
     end
     
     def __changed_up
-      v = __safe_changed_up
-      case v
-        when Left then raise ZipperNavigationError.new(v.error)
-        when Right then v.value
-      end      
+      __safe_changed_up.either(->r{r.value},
+                               ->l{raise ZipperNavigationError.new(l.error)})
     end
     
     def __safe_changed_up
