@@ -15,7 +15,14 @@ module Zipr
   # "Take this structure, move down then left. Replace that node with this node.
   # Then go right, and insert this node. Oh, and delete the leftmost child."
   #
-  # This zipper
+  # This zipper provides both "safe" and "unsafe" navigations/mutations. A safe
+  # operation is one that returns either a Right containing a new zipper
+  # representing that operation if the action makes sense on the current node, or
+  # a Left if the action is impossible (for instance, trying to move down on a
+  # leaf node of a tree). An unsafe operation simply raises a
+  # ZipperNavigationError in the event of an impossible action. Unsafe operations
+  # provide a terser navigation, at the risk of raising an exception. A chain of
+  # safe operations simply returns the first error encountered.
   class Zipper
     attr_reader :value
     attr_reader :context
