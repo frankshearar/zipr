@@ -69,6 +69,10 @@ module Zipr
       @mknode.call(value, children)
     end
 
+    def append_all(array_of_new_nodes)
+      safe_append_all(array_of_new_nodes).value
+    end
+
     def append_child(new_node)
       safe_append_child(new_node).value
     end
@@ -101,6 +105,10 @@ module Zipr
       safe_insert_child(new_node).value
     end
 
+    def insert_all(array_of_new_nodes)
+      safe_insert_all(array_of_new_nodes).value
+    end
+
     def insert_left(new_node)
       safe_insert_left(new_node).value
     end
@@ -127,6 +135,11 @@ module Zipr
     end
 
     # Maintaining the current focus, add a new right-most child.
+    def safe_append_all(array_of_new_nodes)
+      safe_replace(mknode(value, children(value) + array_of_new_nodes))
+    end
+
+    # Maintaining the current focus, add a new right-most child.
     def safe_append_child(new_node)
       safe_replace(mknode(value, children(value) + [new_node]))
     end
@@ -140,6 +153,12 @@ module Zipr
     # Maintaining the current focus, add a new left-most child.
     def safe_insert_child(new_node)
       safe_replace(mknode(value, [new_node] + children(value)))
+    end
+
+    # Maintaining the current focus, add an array of new children, in order, on
+    # the left of the current children
+    def safe_insert_all(array_of_new_nodes)
+      safe_replace(mknode(value, array_of_new_nodes + children(value)))
     end
 
     # Maintaining the current focus, add a new sibling to the left.

@@ -263,6 +263,18 @@ module Zipr
       z.root.should == Tree.new(1, [Tree.new(2, []), Tree.new(5, []), Tree.new(3, [Tree.new(4, [])])])
     end
 
+    it "should allow the bulk insert of a number of children to the left" do
+      t = Tree.new(1, [Tree.new(2, [])])
+      z = t.zipper.insert_all((3..5).map {|i| Tree.new(i, [])})
+      z.root.should == Tree.new(1, [Tree.new(3, []), Tree.new(4, []), Tree.new(5, []), Tree.new(2, [])])
+    end
+
+    it "should allow the bulk insert of a number of children to the right" do
+      t = Tree.new(1, [Tree.new(2, [])])
+      z = t.zipper.append_all((3..5).map {|i| Tree.new(i, [])})
+      z.root.should == Tree.new(1, [Tree.new(2, []), Tree.new(3, []), Tree.new(4, []), Tree.new(5, [])])
+    end
+
     it "should root on a trivial structure" do
       t = Leaf.new(1)
       t.zipper.root.should == t
