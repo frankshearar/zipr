@@ -233,6 +233,18 @@ module Zipr
       z.root.should == Node.new(1, [Leaf.new(2)])
     end
 
+    it "should allow inserting a child node on a leaf node" do
+      t = Tree.new(1, [])
+      z = t.zipper.insert_child(Tree.new(2, []))
+      z.root.should == Tree.new(1, [Tree.new(2, [])])
+    end
+
+    it "should insert a child as the leftmost child" do
+      t = Tree.new(1, [Tree.new(2, [])])
+      z = t.zipper.insert_child(Tree.new(3, [])).insert_child(Tree.new(4, []))
+      z.root.should == Tree.new(1, [Tree.new(4, []), Tree.new(3, []), Tree.new(2, [])])
+    end
+
     it "should root on a trivial structure" do
       t = Leaf.new(1)
       t.zipper.root.should == t

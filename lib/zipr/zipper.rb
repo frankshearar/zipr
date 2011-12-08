@@ -65,6 +65,10 @@ module Zipr
                      ->l{raise ZipperNavigationError.new(l.error)})
     end
 
+    def insert_child(new_node)
+      safe_insert_child(new_node).value
+    end
+
     def replace(new_node)
       safe_replace(new_node).value
     end
@@ -84,6 +88,10 @@ module Zipr
 
     def safe_change(&block)
       safe_replace(block.call(value))
+    end
+
+    def safe_insert_child(new_node)
+      safe_replace(mknode(value, [new_node] + children(value)))
     end
 
     # Move the context to the first (leftmost) child node.
