@@ -3,7 +3,7 @@ A [Huet-style zipper](http://www.st.cs.uni-saarland.de/edu/seminare/2005/advance
 Basic architecture
 ------------------
 
-The framework supplies two ways of navigating through a structure. "Safe navigation" methods are named safe_foo, and uses the Either monad: attempting to move off the structure returns a Left indicating the error; otherwise, we get a Right containing a zipper on the next position. "Unsafe navigation" methods are just like the safe ones, only without a "safe_" prefix.
+The framework supplies two ways of navigating through a structure. "Safe navigation" methods are named safe_foo, and uses the `Either` monad: attempting to move off the structure returns a `Left` indicating the error; otherwise, we get a `Right` containing a `Zipper` on the next position. "Unsafe navigation" methods are just like the safe ones, only without a "safe_" prefix.
 
 Unsafe navigation's suited for when you know the precise path to some node, allowing for terse code:
 
@@ -15,7 +15,7 @@ Safe navigation's suited for exploring a structure whose structure you don't kno
 
 When we create the zipper, we give it:
 1. a value in the structure
-2. a context (if we're starting navigation this will be a RootContext.
+2. a context (if we're starting navigation this will be a RootContext).
 3. a trio of behaviours describing
 3.1 whether a node has children
 3.2 what those children are
@@ -27,7 +27,7 @@ Those three behaviours may be a Proc or a Symbol naming a method:
     mknode = ->value, children {Tree.new(value, children)}
     Zipper.new(t, RootContext.new, ->x{!x.children.empty?}, :children, mknode)
 
-The sample structures provide their own convenience :zipper methods.
+The sample structures provide their own convenience `:zipper` methods.
 
 Licence
 -------

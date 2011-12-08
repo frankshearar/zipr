@@ -2,6 +2,20 @@ require 'zipr/either'
 require 'zipr/unsupported-operation'
 
 module Zipr
+  # A zipper is a data structure consisting of a value (representing some place
+  # in some data structure) and a context (the rest of the structure, or the
+  # hole into which you plug the value to have the original structure once more).
+  #
+  # You may think of a zipper as a suspended walk - that is, as a means of
+  # navigating and mutating a data structure such that at any point you can store
+  # your traversal/mutation and go do something else.
+  #
+  # You may also think of a zipper, equivalently, as a set of change records, or
+  # a monad or computation builder:
+  # "Take this structure, move down then left. Replace that node with this node.
+  # Then go right, and insert this node. Oh, and delete the leftmost child."
+  #
+  # This zipper
   class Zipper
     attr_reader :value
     attr_reader :context
@@ -19,6 +33,9 @@ module Zipr
       @mknode = mknode
     end
 
+    # Is this node a node that may have children? If given a Symbol, send that
+    # message to the node. Otherwise, return the result of invoking the unary
+    # Proc with the node.
     def branch?(node)
       case @branch
         when Symbol then node.send(@branch)
@@ -28,6 +45,9 @@ module Zipr
       end
     end
 
+    # What children does this node have? If given a Symbol, send that message
+    # to the node. Otherwise, return the result of invoking the unary Proc with
+    # the node.
     def children(node)
       case @children
         when Symbol then node.send(@children)
@@ -37,6 +57,7 @@ module Zipr
       end
     end
 
+    # Given a parent node and some children, construct a new node.
     def mknode(value, children)
       @mknode.call(value, children)
     end
@@ -98,18 +119,23 @@ module Zipr
       end
     end
 
+    # Maintaining the current focus, add a new right-most child.
     def safe_append_child(new_node)
       safe_replace(mknode(value, children(value) + [new_node]))
     end
 
+    # Replace the current focus with the result of calling some unary function
+    # with the current focus.
     def safe_change(&block)
       safe_replace(block.call(value))
     end
 
+    # Maintaining the current focus, add a new left-most child.
     def safe_insert_child(new_node)
       safe_replace(mknode(value, [new_node] + children(value)))
     end
 
+    # Maintaining the current focus, add a new sibling to the left.
     def safe_insert_left(new_node)
       Right.new(new_zipper(value,
                            Context.new(context.path,
@@ -120,6 +146,7 @@ module Zipr
                                        true)))
     end
 
+    # Maintaining the current focus, add a new sibling to the right.
     def safe_insert_right(new_node)
       Right.new(new_zipper(value,
                            Context.new(context.path,
@@ -131,6 +158,7 @@ module Zipr
     end
 
     # Move the context to the first (leftmost) child node.
+    # Return a Left if the current focus has no children.
     def safe_down
       if branch?(value) then
         Right.new(new_zipper(children(value).first,
@@ -145,6 +173,8 @@ module Zipr
       end
     end
 
+    # Move the context to the sibling to the left.
+    # Return a Left is the current focus is the leftmost sibling.
     def safe_left
       if context.root? then
         Left.new(:left_at_root)
@@ -161,6 +191,8 @@ module Zipr
       end
     end
 
+    # Move the context to the sibling to the right.
+    # Return a Left is the current focus is the rightmost sibling.
     def safe_right
       if context.root? then
         Left.new(:right_at_root)
@@ -177,6 +209,8 @@ module Zipr
       end
     end
 
+    # Replace the current focus with the given node. You may replace the entire
+    # structure if you call this method as your first action on the structure.
     def safe_replace(new_node)
       Right.new(new_zipper(new_node,
                            # This could be a Context or a RootContext
@@ -188,6 +222,8 @@ module Zipr
                                              true)))
     end
 
+    # Zip up one step. If called on the root context - the first action on the
+    # structure - return a Left.
     def safe_up
       if context.root? then
         Left.new(:up_at_root)
@@ -197,6 +233,7 @@ module Zipr
       end
     end
     
+    # An internal method. Zip up a mutated structure.
     def __changed_root
       if context.root? then
         @value
@@ -209,7 +246,9 @@ module Zipr
       __safe_changed_up.either(->r{r.value},
                                ->l{raise ZipperNavigationError.new(l.error)})
     end
-    
+
+    # An internal method. The zipper uses this recursion to record in the call
+    # stack that the structure has changed.    
     def __safe_changed_up
       if context.root? then
         Left.new(:up_at_root)
