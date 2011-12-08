@@ -107,7 +107,7 @@ module Zipr
       }
     end
 
-    it "should have left most to the next left sibling" do
+    it "should have left move to the next left sibling" do
       t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
       z = t.zipper.down.right.safe_left
       z.should be_right
