@@ -91,9 +91,17 @@ module Zipr
                        ->l{raise ZipperNavigationError.new(l.error)})
     end
 
+    def leftmost
+      safe_leftmost.value
+    end
+
     def right
       safe_right.either(->r{r.value},
                         ->l{raise ZipperNavigationError.new(l.error)})
+    end
+
+    def rightmost
+      safe_rightmost.value
     end
 
     def up
@@ -217,6 +225,26 @@ module Zipr
       end
     end
 
+    # Immediately move to the leftmost sibling (or stay in place, if already
+    # leftmost). Visit the intermediate nodes "in bulk".
+    #
+    # This operation can't fail because there must be at least this node, even
+    # with no siblings: you can't go down when you're on a node without children.
+    def safe_leftmost
+      if context.left_nodes == [] then
+        Right.new(self)
+      else
+        all_but_leftmost = context.left_nodes.drop(1)
+        Right.new(new_zipper(context.left_nodes.first,
+                             Context.new(context,
+                                         value,
+                                         [],
+                                         all_but_leftmost + [value] + context.right_nodes,
+                                         context.visited_nodes + all_but_leftmost,
+                                         false)))
+      end
+    end
+
     # Move the context to the sibling to the right.
     # Return a Left is the current focus is the rightmost sibling.
     def safe_right
@@ -231,6 +259,26 @@ module Zipr
                                          context.left_nodes + [value],
                                          context.right_nodes.drop(1),
                                          context.visited_nodes + [value],
+                                         false)))
+      end
+    end
+
+    # Immediately move to the rightmost sibling (or stay in place, if already
+    # rightmost). Visit the intermediate nodes "in bulk".
+    #
+    # This operation can't fail because there must be at least this node, even
+    # with no siblings: you can't go down when you're on a node without children.
+    def safe_rightmost
+      if context.right_nodes == [] then
+        Right.new(self)
+      else
+        all_but_rightmost = context.right_nodes[0..-2]
+        Right.new(new_zipper(context.right_nodes.last,
+                             Context.new(context,
+                                         value,
+                                         context.left_nodes + [value] + all_but_rightmost,
+                                         [],
+                                         context.visited_nodes + all_but_rightmost,
                                          false)))
       end
     end

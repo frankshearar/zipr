@@ -200,6 +200,68 @@ module Zipr
       }
     end
 
+    it "should have rightmost move immediately to the rightmost node" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.safe_rightmost
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.value.should == Leaf.new(5)
+    end
+
+    it "should have rightmost not forget about the current node" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.right.right.right.rightmost
+      z.value.should == Leaf.new(5)
+      z.left.value.should == Leaf.new(4)
+    end
+
+    it "should have rightmost not move when at the rightmost node" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.rightmost.safe_rightmost
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.value.should == Leaf.new(5)
+    end
+
+    it "should have rightmost work when there's only one child" do
+      t = Node.new(:root, [Leaf.new(1)])
+      z = t.zipper.down.safe_rightmost
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.value.should == Leaf.new(1)
+    end
+
+    it "should have leftmost move immediately to the leftmost node" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.rightmost.safe_leftmost
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.value.should == Leaf.new(1)
+    end
+
+    it "should have leftmost not forget about the current node" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.right.leftmost
+      z.value.should == Leaf.new(1)
+      z.right.value.should == Leaf.new(2)
+    end
+
+    it "should have leftmost not move when at the leftmost node" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.safe_leftmost
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.value.should == Leaf.new(1)
+    end
+
+    it "should have leftmost work when there's only one child" do
+      t = Node.new(:root, [Leaf.new(1)])
+      z = t.zipper.down.safe_leftmost
+      z.should be_right
+      new_zipper = z.value
+      new_zipper.value.should == Leaf.new(1)
+    end
+
     it "should allow replacing of a root node" do
       t = Tree.new(1, [])
       z = t.zipper.safe_replace(Tree.new(2, []))
