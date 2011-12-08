@@ -73,6 +73,10 @@ module Zipr
       safe_insert_left(new_node).value
     end
 
+    def insert_right(new_node)
+      safe_insert_right(new_node).value
+    end
+
     def replace(new_node)
       safe_replace(new_node).value
     end
@@ -104,6 +108,16 @@ module Zipr
                                        context.parent_node,
                                        context.left_nodes + [new_node],
                                        context.right_nodes,
+                                       context.visited_nodes,
+                                       true)))
+    end
+
+    def safe_insert_right(new_node)
+      Right.new(new_zipper(value,
+                           Context.new(context.path,
+                                       context.parent_node,
+                                       context.left_nodes,
+                                       [new_node] + context.right_nodes,
                                        context.visited_nodes,
                                        true)))
     end

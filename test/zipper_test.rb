@@ -251,6 +251,12 @@ module Zipr
       z.root.should == Tree.new(1, [Tree.new(3, [Tree.new(4, [])]), Tree.new(5, []), Tree.new(2, [])])
     end
 
+    it "should allow inserting a sibling to the right" do
+      t = Tree.new(1, [Tree.new(2, [])])
+      z = t.zipper.down.insert_right(Tree.new(3, [Tree.new(4, [])])).insert_right(Tree.new(5, []))
+      z.root.should == Tree.new(1, [Tree.new(2, []), Tree.new(5, []), Tree.new(3, [Tree.new(4, [])])])
+    end
+
     it "should root on a trivial structure" do
       t = Leaf.new(1)
       t.zipper.root.should == t
