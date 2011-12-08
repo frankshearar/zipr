@@ -245,6 +245,12 @@ module Zipr
       z.root.should == Tree.new(1, [Tree.new(4, []), Tree.new(3, []), Tree.new(2, [])])
     end
 
+    it "should allow inserting a child as the rightmost child" do
+      t = Tree.new(1, [Tree.new(2, [])])
+      z = t.zipper.append_child(Tree.new(3, [])).append_child(Tree.new(4, []))
+      z.root.should == Tree.new(1, [Tree.new(2, []), Tree.new(3, []), Tree.new(4, [])])
+    end
+
     it "should allow inserting a sibling to the left" do
       t = Tree.new(1, [Tree.new(2, [])])
       z = t.zipper.down.insert_left(Tree.new(3, [Tree.new(4, [])])).insert_left(Tree.new(5, []))

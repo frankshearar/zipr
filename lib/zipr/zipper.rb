@@ -41,6 +41,10 @@ module Zipr
       @mknode.call(value, children)
     end
 
+    def append_child(new_node)
+      safe_append_child(new_node).value
+    end
+
     def change(&block)
       safe_change(&block).value
     end
@@ -92,6 +96,10 @@ module Zipr
           up.root
         end
       end
+    end
+
+    def safe_append_child(new_node)
+      safe_replace(mknode(value, children(value) + [new_node]))
     end
 
     def safe_change(&block)
