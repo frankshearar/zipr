@@ -1,6 +1,7 @@
 require 'zipr/zipper'
 require 'rantly/property'
 require 'rspec'
+require 'zipr/rantly-extensions'
 
 module Zipr
   describe Zipper do
@@ -376,10 +377,6 @@ class Rantly
       end
       Zipr::Node.new(any, subtrees)
     end
-  end
-
-  def any
-    choose(integer, string, boolean)
   end
 end
 

@@ -10,7 +10,7 @@ require 'rspec/core/rake_task'
 
 require 'rake/testtask'
 RSpec::Core::RakeTask.new(:test) do |test|
-  test.pattern = 'test/**/*_test.rb'
+  test.pattern = 'test/**/e*_test.rb'
   test.verbose = true
 end
 
