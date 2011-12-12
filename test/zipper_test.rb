@@ -216,6 +216,14 @@ module Zipr
       z.left.value.should == Leaf.new(4)
     end
 
+    it "should have rightmost preserve the parent node backpointer" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.rightmost
+      z.value.should == Leaf.new(5)
+      z.context.parent_node.should == t
+      z.left.value.should == Leaf.new(4)
+    end
+
     it "should have rightmost not move when at the rightmost node" do
       t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
       z = t.zipper.down.rightmost.safe_rightmost

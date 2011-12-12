@@ -275,7 +275,7 @@ module Zipr
         all_but_rightmost = context.right_nodes[0..-2]
         Right.new(new_zipper(context.right_nodes.last,
                              Context.new(context,
-                                         value,
+                                         context.parent_node,
                                          context.left_nodes + [value] + all_but_rightmost,
                                          [],
                                          context.visited_nodes + all_but_rightmost,
