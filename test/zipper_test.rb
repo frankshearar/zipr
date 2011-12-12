@@ -136,6 +136,13 @@ module Zipr
       new_zipper.value.value.should == 2
     end
 
+    it "should have right preserve the parent node backpointer" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.right
+      z.value.should == Leaf.new(2)
+      z.context.parent_node.should == t
+    end
+
     it "should have right fail on root node" do
       t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
       z = t.zipper.safe_right

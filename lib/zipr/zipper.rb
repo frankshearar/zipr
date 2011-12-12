@@ -255,7 +255,7 @@ module Zipr
       else
         Right.new(new_zipper(context.right_nodes.first,
                              Context.new(context,
-                                         value,
+                                         context.parent_node,
                                          context.left_nodes + [value],
                                          context.right_nodes.drop(1),
                                          context.visited_nodes + [value],
