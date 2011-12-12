@@ -117,6 +117,13 @@ module Zipr
       new_zipper.value.value.should == 1
     end
 
+    it "should have left preserve the parent node backpointer" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.right.left
+      z.value.should == Leaf.new(1)
+      z.context.parent_node.should == t
+    end
+
     it "should have unsafe left fail on a leftmost child" do
       t = Node.new(1, [Leaf.new(1)])
       ->{
@@ -260,6 +267,13 @@ module Zipr
       z = t.zipper.down.right.leftmost
       z.value.should == Leaf.new(1)
       z.right.value.should == Leaf.new(2)
+    end
+
+    it "should have leftmost preserve the parent node backpointer" do
+      t = Node.new(:root, (1..5).map {|i| Leaf.new(i)})
+      z = t.zipper.down.rightmost.leftmost
+      z.value.should == Leaf.new(1)
+      z.context.parent_node.should == t
     end
 
     it "should have leftmost not move when at the leftmost node" do

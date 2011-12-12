@@ -217,7 +217,7 @@ module Zipr
       else
         Right.new(new_zipper(context.left_nodes.last,
                              Context.new(context,
-                                         value,
+                                         context.parent_node,
                                          context.left_nodes[0..-2],
                                          [value] + context.right_nodes,
                                          context.visited_nodes + [value],
@@ -237,7 +237,7 @@ module Zipr
         all_but_leftmost = context.left_nodes.drop(1)
         Right.new(new_zipper(context.left_nodes.first,
                              Context.new(context,
-                                         value,
+                                         context.parent_node,
                                          [],
                                          all_but_leftmost + [value] + context.right_nodes,
                                          context.visited_nodes + all_but_leftmost,
