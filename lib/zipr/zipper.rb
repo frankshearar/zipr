@@ -379,6 +379,13 @@ module Zipr
     def root?
       false
     end
+
+    def debug_string(value)
+      ["left: [#{left_nodes.map{|c|c.to_s}.join(",")}]",
+       "value: #{value.to_s}",
+       "right: [#{right_nodes.map{|c|c.to_s}.join(",")}]",
+       "parent: #{parent_node.to_s}"].join(", ")
+    end
   end
 
   # Marker class, indicating that we've not navigated anywhere or mutated
