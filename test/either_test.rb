@@ -113,17 +113,17 @@ module Zipr
     end
 
     it "should return the result of either's first argument when Right" do
-      Right.new(1).either(->x{x.value}, ->x{raise "This is the wrong Proc."}).should == 1
+      Right.new(1).either(->x{x}, ->x{raise "This is the wrong Proc."}).should == 1
     end
 
     it "should run the second argument of either when Left" do
       ->{
-        Left.new(:foo).either(->x{raise "This is the wrong Proc."}, ->x{x.error})
+        Left.new(:foo).either(->x{raise "This is the wrong Proc."}, ->x{x})
       }.should_not raise_error
     end
 
     it "should return the result of either's second argument when Left" do
-      Left.new(:foo).either(->x{raise "This is the wrong Proc."}, ->x{x.error}).should == :foo
+      Left.new(:foo).either(->x{raise "This is the wrong Proc."}, ->x{x}).should == :foo
     end
 
     it "should not run :then when given a Left" do

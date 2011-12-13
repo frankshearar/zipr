@@ -38,7 +38,7 @@ module Zipr
     end
 
     def either(right_fn, left_fn)
-      right_fn.call(self)
+      right_fn.call(self.value)
     end
 
     def right?
@@ -79,7 +79,7 @@ module Zipr
     end
 
     def either(right_fn, left_fn)
-      left_fn.call(self)
+      left_fn.call(self.error)
     end
 
     def left?
