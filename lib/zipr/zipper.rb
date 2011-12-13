@@ -195,11 +195,12 @@ module Zipr
     # Return a Left if the current focus has no children.
     def safe_down
       if branch?(value) then
-        Right.new(new_zipper(children(value).first,
+        children = children(value)
+        Right.new(new_zipper(children.first,
                              Context.new(context,
                                          value,
                                          [],
-                                         children(value).drop(1),
+                                         children.drop(1),
                                          context.visited_nodes + [value],
                                          false)))
       else
@@ -338,7 +339,7 @@ module Zipr
       Zipper.new(value, context, @branch, @children, @mknode)
     end
   end
-  
+
   # A one-hole context in some arbitrary hierarchical structure
   class Context
     attr_reader :left_nodes
