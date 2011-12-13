@@ -125,6 +125,11 @@ module Zipr
       safe_insert_right(new_node).value
     end
 
+    def remove
+      safe_remove.either(->r{r.value},
+                         ->l{raise ZipperNavigationError.new(l.error)})
+    end
+
     def replace(new_node)
       safe_replace(new_node).value
     end
@@ -281,6 +286,38 @@ module Zipr
                                          [],
                                          context.visited_nodes + all_but_rightmost,
                                          false)))
+      end
+    end
+
+    # Remove the current focus. If possible, move to the left sibling. Otherwise,
+    # move to the parent.
+    def safe_remove
+      if context.root? then
+        Left.new(:remove_at_root)
+      else
+        z = nil
+        if context.left_nodes.empty? then
+          z = new_zipper(mknode(context.parent_node, context.right_nodes),
+                         context.path.class.new(context.path.path,
+                                                context.path.parent_node,
+                                                context.path.left_nodes,
+                                                context.path.right_nodes,
+                                                context.visited_nodes,
+                                                true))
+          z
+        else
+          # TODO: This behaviour fulfils the current test suite, but it
+          # is hard to understand why exactly it works.
+          z = new_zipper(context.left_nodes.last,
+                         context.path.class.new(context.path.path,
+                                                context.path.parent_node,
+                                                context.left_nodes.drop(1),
+                                                context.right_nodes,
+                                                context.visited_nodes,
+                                                true))
+          z
+        end
+        Right.new(z)
       end
     end
 

@@ -382,6 +382,55 @@ module Zipr
       z = t.zipper.down.replace(Tree.new(0, []))
       z.root.should == Tree.new(2, [Tree.new(0, []), Tree.new(3, [])])
     end
+
+    it "should allow the deleting of solitary children" do
+      t = Tree.new(1, [Tree.new(2, [])])
+      z = t.zipper.down.remove
+      z.root.should == Tree.new(1, [])
+    end
+
+    it "should not allow the deleting of an entire structure" do
+      t = Tree.new(1, [Tree.new(2, [])])
+      z = t.zipper.safe_remove
+      z.should be_left
+      z.error.should == :remove_at_root
+    end
+
+    it "should have unsafe delete at root fail" do
+      ->{
+        Tree.new(1, []).zipper.remove
+      }.should raise_error(ZipperNavigationError) { |e|
+        e.to_s.should == "Navigation error - :remove_at_root"
+      }
+    end
+
+    it "should move to the left sibling after deleting a node (1)" do
+      t = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+      z = t.zipper.down.rightmost.remove
+      z.value.should == Tree.new(2, [])
+      z.root.should == Tree.new(1, [Tree.new(2, [])])
+    end
+
+    it "should move to the left sibling after deleting a node (2)" do
+      t = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+      z = t.zipper.down.right.remove
+      z.value.should == Tree.new(2, [])
+      z.root.should == Tree.new(1, [Tree.new(2, [])])
+    end
+
+    it "should move to the parent after deleting the leftmost child" do
+      t = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+      z = t.zipper.down.remove
+      z.value.value.should == 1
+      z.root.should == Tree.new(1, [Tree.new(3, [])])
+    end
+
+    it "should move to the parent after deleting the leftmost child within a subtree" do
+      t = Tree.new(1, [Tree.new(2, [Tree.new(4, [])]), Tree.new(3, [])])
+      z = t.zipper.down.down.remove
+      z.value.value.should == 2
+      z.root.should == Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+    end
   end
 end
 
