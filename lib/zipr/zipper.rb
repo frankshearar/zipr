@@ -307,7 +307,8 @@ module Zipr
           z
         else
           # TODO: This behaviour fulfils the current test suite, but it
-          # is hard to understand why exactly it works.
+          # is hard to understand why exactly it works. Note how we pull
+          # info from both the parent and grandparent contexts!
           z = new_zipper(context.left_nodes.last,
                          context.path.class.new(context.path.path,
                                                 context.path.parent_node,
