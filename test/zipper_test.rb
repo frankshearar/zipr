@@ -21,9 +21,12 @@ module Zipr
     end
 
     it "should record an error going down on a leaf" do
-      l = Leaf.new(1).zipper.safe_down
-      l.should be_left
-      l.error.should == :down_at_leaf
+      l = Leaf.new(1)
+      loc = l.zipper
+      z = loc.safe_down
+      z.should be_left
+      z.error.error.should == :down_at_leaf
+      z.error.location.should == loc
     end
 
     it "should allow down on a branch point" do
@@ -53,9 +56,12 @@ module Zipr
     end
 
     it "should forbid up at the root node" do
-      z = Leaf.new(1).zipper.safe_up
+      l = Leaf.new(1)
+      loc = l.zipper
+      z = loc.safe_up
       z.should be_left
-      z.error.should == :up_at_root
+      z.error.error.should == :up_at_root
+      z.error.location.should == loc
     end
 
     it "should have up move to the parent node" do
@@ -87,16 +93,20 @@ module Zipr
 
     it "should have left fail on a leftmost child" do
       t = Node.new(1, [Leaf.new(1)])
-      z = t.zipper.down.safe_left
+      loc = t.zipper.down
+      z = loc.safe_left
       z.should be_left
-      z.error.should == :left_at_leftmost
+      z.error.error.should == :left_at_leftmost
+      z.error.location.should == loc
     end
 
     it "should have left fail on root node" do
       t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
-      z = t.zipper.safe_left
+      n = t.zipper
+      z = n.safe_left
       z.should be_left
-      z.error.should == :left_at_root
+      z.error.error.should == :left_at_root
+      z.error.location.should == n
     end
 
     it "should have unsafe left fail on root node" do
@@ -152,9 +162,11 @@ module Zipr
 
     it "should have right fail on root node" do
       t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
-      z = t.zipper.safe_right
+      n = t.zipper
+      z = n.safe_right
       z.should be_left
-      z.error.should == :right_at_root
+      z.error.error.should == :right_at_root
+      z.error.location.should == n
     end
 
     it "should have unsafe right fail on root node" do
@@ -176,9 +188,11 @@ module Zipr
 
     it "should have right fail on the rightmost child" do
       t = Node.new(1, [Leaf.new(1)])
-      z = t.zipper.down.safe_right
+      loc = t.zipper.down
+      z = loc.safe_right
       z.should be_left
-      z.error.should == :right_at_rightmost
+      z.error.error.should == :right_at_rightmost
+      z.error.location.should == loc
     end
 
     it "should have unsafe right fail on the rightmost child" do
@@ -391,9 +405,11 @@ module Zipr
 
     it "should not allow the deleting of an entire structure" do
       t = Tree.new(1, [Tree.new(2, [])])
-      z = t.zipper.safe_remove
+      loc = t.zipper
+      z = loc.safe_remove
       z.should be_left
-      z.error.should == :remove_at_root
+      z.error.error.should == :remove_at_root
+      z.error.location.should == loc
     end
 
     it "should have unsafe delete at root fail" do

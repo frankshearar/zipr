@@ -83,12 +83,12 @@ module Zipr
 
     def down
       safe_down.either(->r{r.value},
-                       ->l{raise ZipperNavigationError.new(l.error)})
+                       ->l{raise ZipperNavigationError.new(l.error.error)})
     end
 
     def left
       safe_left.either(->r{r.value},
-                       ->l{raise ZipperNavigationError.new(l.error)})
+                       ->l{raise ZipperNavigationError.new(l.error.error)})
     end
 
     def leftmost
@@ -97,7 +97,7 @@ module Zipr
 
     def right
       safe_right.either(->r{r.value},
-                        ->l{raise ZipperNavigationError.new(l.error)})
+                        ->l{raise ZipperNavigationError.new(l.error.error)})
     end
 
     def rightmost
@@ -106,7 +106,7 @@ module Zipr
 
     def up
       safe_up.either(->r{r.value},
-                     ->l{raise ZipperNavigationError.new(l.error)})
+                     ->l{raise ZipperNavigationError.new(l.error.error)})
     end
 
     def insert_child(new_node)
@@ -127,7 +127,7 @@ module Zipr
 
     def remove
       safe_remove.either(->r{r.value},
-                         ->l{raise ZipperNavigationError.new(l.error)})
+                         ->l{raise ZipperNavigationError.new(l.error.error)})
     end
 
     def replace(new_node)
@@ -209,7 +209,7 @@ module Zipr
                                          context.visited_nodes + [value],
                                          false)))
       else
-        Left.new(:down_at_leaf)
+        Left.new(ZipperError.new(:down_at_leaf, self))
       end
     end
 
@@ -217,9 +217,9 @@ module Zipr
     # Return a Left is the current focus is the leftmost sibling.
     def safe_left
       if context.root? then
-        Left.new(:left_at_root)
+        Left.new(ZipperError.new(:left_at_root, self))
       elsif context.left_nodes.empty? then
-        Left.new(:left_at_leftmost)
+        Left.new(ZipperError.new(:left_at_leftmost, self))
       else
         Right.new(new_zipper(context.left_nodes.last,
                              Context.new(context,
@@ -255,9 +255,9 @@ module Zipr
     # Return a Left is the current focus is the rightmost sibling.
     def safe_right
       if context.root? then
-        Left.new(:right_at_root)
+        Left.new(ZipperError.new(:right_at_root, self))
       elsif context.right_nodes.empty? then
-        Left.new(:right_at_rightmost)
+        Left.new(ZipperError.new(:right_at_rightmost, self))
       else
         Right.new(new_zipper(context.right_nodes.first,
                              Context.new(context,
@@ -293,7 +293,7 @@ module Zipr
     # move to the parent.
     def safe_remove
       if context.root? then
-        Left.new(:remove_at_root)
+        Left.new(ZipperError.new(:remove_at_root, self))
       else
         z = nil
         if context.left_nodes.empty? then
@@ -339,7 +339,7 @@ module Zipr
     # structure - return a Left.
     def safe_up
       if context.root? then
-        Left.new(:up_at_root)
+        Left.new(ZipperError.new(:up_at_root, self))
       else
         Right.new(new_zipper(context.visited_nodes.last,
                              context.path))
@@ -357,14 +357,14 @@ module Zipr
     
     def __changed_up
       __safe_changed_up.either(->r{r.value},
-                               ->l{raise ZipperNavigationError.new(l.error)})
+                               ->l{raise ZipperNavigationError.new(l.error.error)})
     end
 
     # An internal method. The zipper uses this recursion to record in the call
     # stack that the structure has changed.    
     def __safe_changed_up
       if context.root? then
-        Left.new(:up_at_root)
+        Left.new(ZipperError.new(:up_at_root, self))
       else
         Right.new(new_zipper(mknode(context.parent_node,
                                     context.left_nodes + [value] + context.right_nodes),
@@ -431,6 +431,15 @@ module Zipr
   class RootContext < Context
     def root?
       true
+    end
+  end
+
+  class ZipperError
+    attr_reader :error
+    attr_reader :location
+    def initialize(error_symbol, zipper)
+      @error = error_symbol
+      @location = zipper
     end
   end
 
