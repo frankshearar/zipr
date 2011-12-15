@@ -82,13 +82,13 @@ module Zipr
     end
 
     def down
-      safe_down.either(->r{r.value},
-                       ->l{raise ZipperNavigationError.new(l.error.error)})
+      safe_down.either(->z{z},
+                       ->e{raise ZipperNavigationError.new(e.error)})
     end
 
     def left
-      safe_left.either(->r{r.value},
-                       ->l{raise ZipperNavigationError.new(l.error.error)})
+      safe_left.either(->z{z},
+                       ->e{raise ZipperNavigationError.new(e.error)})
     end
 
     def leftmost
@@ -96,8 +96,8 @@ module Zipr
     end
 
     def right
-      safe_right.either(->r{r.value},
-                        ->l{raise ZipperNavigationError.new(l.error.error)})
+      safe_right.either(->z{z},
+                        ->e{raise ZipperNavigationError.new(e.error)})
     end
 
     def rightmost
@@ -105,8 +105,8 @@ module Zipr
     end
 
     def up
-      safe_up.either(->r{r.value},
-                     ->l{raise ZipperNavigationError.new(l.error.error)})
+      safe_up.either(->z{z},
+                     ->e{raise ZipperNavigationError.new(e.error)})
     end
 
     def insert_child(new_node)
@@ -126,8 +126,8 @@ module Zipr
     end
 
     def remove
-      safe_remove.either(->r{r.value},
-                         ->l{raise ZipperNavigationError.new(l.error.error)})
+      safe_remove.either(->z{z},
+                         ->e{raise ZipperNavigationError.new(e.error)})
     end
 
     def replace(new_node)
@@ -356,8 +356,8 @@ module Zipr
     end
     
     def __changed_up
-      __safe_changed_up.either(->r{r.value},
-                               ->l{raise ZipperNavigationError.new(l.error.error)})
+      __safe_changed_up.either(->z{z},
+                               ->e{raise ZipperNavigationError.new(e.error)})
     end
 
     # An internal method. The zipper uses this recursion to record in the call
