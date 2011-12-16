@@ -73,6 +73,11 @@ module Zipr
       new_zipper.value.tag.should == 1
     end
 
+  it "should have down, down, up, up be an idempotent navigation" do
+    t = Node.new(:root, [Node.new(:child, [Leaf.new(:grandchild)])])
+    t.zipper.down.down.up.up.value.should == t
+  end
+
     it "should have down then up be an idempotent navigation" do
       property_of {
         t = sized(50) { tree }
