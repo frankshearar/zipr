@@ -376,6 +376,91 @@ module Zipr
     end
   end
 
+  class Traversal
+    def collect(&block)
+      map(&block)
+    end
+
+    def each(&block)
+      raise UnsupportedOperation.new(:each, self)
+    end
+
+    def map(&block)
+      raise UnsupportedOperation.new(:each, self)
+    end
+  end
+
+  class PreOrderTraversal
+    attr_accessor :zipper
+
+    def initialize(zipper)
+      @zipper = zipper
+    end
+
+    # Perform a pre-order traversal. That is, given a tree, process the node,
+    # and then process the child trees from left to right.
+    def each(&unary_block)
+      while __has_next? do
+        unary_block.call(@zipper.value)
+        @zipper = __next
+      end
+    end
+
+    private
+    def __has_next?
+      @zipper != :end
+    end
+
+    # I would just call this "next", but then invoking it requires "self.next",
+    # which forces next to be public. You can't "self.foo" when :foo is private.
+    def __next
+      if not __has_next? then
+        return @zipper
+      end
+
+      if @zipper.branch?(@zipper.value) then
+        return @zipper.down
+      end
+
+      right_sibling = @zipper.safe_right
+      if right_sibling.right? then
+        return right_sibling.value
+      end
+
+      # Return a Zipper if there's a next, or :end if there isn't.
+      # This algorithm returns a thunk when it wishes to recurse.
+      # The trampoline converts this CPS-like algorithm into one
+      # that runs in constant space.
+      trampoline(@zipper) { |z|
+        case z
+          when Proc then z = z.call
+          when :end then next :end
+        end
+
+        parent = z.safe_up
+        if parent.right? then
+          uncle = z.safe_up.then {|z| z.safe_right }
+          if uncle.right? then
+            next uncle.value
+          else
+            next ->{parent.value} # Recur
+          end
+        else
+          # We've popped up the structure all the way to the root node.
+          next :end
+        end
+      }
+    end
+
+    def trampoline(initial_value, &unary_block)
+      result = unary_block.call(initial_value)
+      while result.kind_of?(Proc) do
+        result = unary_block.call(result)
+      end
+      result
+    end
+  end
+
   # A one-hole context in some arbitrary hierarchical structure
   class Context
     attr_reader :left_nodes

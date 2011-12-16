@@ -453,6 +453,20 @@ module Zipr
       z.root.should == Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
     end
   end
+
+  describe PreOrderTraversal do
+    it "should process all nodes in a pre-order fashion" do
+      tree = Tree.new(1, [Tree.new(2, [Tree.new(3, [])]),
+                          Tree.new(4, [Tree.new(5, []),
+                                       Tree.new(6, [])])])
+      t = PreOrderTraversal.new(tree.zipper)
+      answers = []
+      t.each { |value|
+        answers << value.value
+      }
+      answers.should == [1, 2, 3, 4, 5, 6]
+    end
+  end
 end
 
 class Rantly
