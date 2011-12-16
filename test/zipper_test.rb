@@ -338,6 +338,13 @@ module Zipr
       new_zipper.root.should == Tree.new(1, [Tree.new(3, [])])
     end
 
+  it "should move over the replaced node" do
+    t = Node.new(:root, [Node.new(:original, [Leaf.new(1), Leaf.new(2)])])
+    z = t.zipper.down.replace(Node.new(:new, [Leaf.new(3)]))
+    z.value.tag.should == :new
+    z.down.value.should == Leaf.new(3)
+  end
+
     it "should allow editing of a node" do
       t = Node.new(1, [Leaf.new(1)])
       z = t.zipper.down.change {|n| Leaf.new(n.value + 1)}
@@ -465,6 +472,19 @@ module Zipr
         answers << value.value
       }
       answers.should == [1, 2, 3, 4, 5, 6]
+    end
+
+    it "should have map produce a structure of the same shape" do
+      tree = Node.new(2, [Leaf.new(1), Leaf.new(2)])
+      t = PreOrderTraversal.new(tree.zipper)
+      new_t = t.map { |node|
+        case node
+          when Node then Node.new(node.tag * 3, node.children)
+          when Leaf then Leaf.new(node.value * 2)
+        end
+      }
+      new_t.class.should == Zipper
+      new_t.root.should == Node.new(6, [Leaf.new(2), Leaf.new(4)])
     end
   end
 end

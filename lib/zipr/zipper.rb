@@ -126,6 +126,10 @@ module Zipr
       safe_insert_right(new_node).value
     end
 
+    def map(traversal = PreOrderTraversal.new, &unary_block)
+      traversal.map(&unary_block)
+    end
+
     def remove
       safe_remove.either(->z{z},
                          ->e{raise ZipperNavigationError.new(e.error)})
@@ -371,7 +375,6 @@ module Zipr
       end
     end
 
-    private
     def new_zipper(value, context)
       Zipper.new(value, context, @branch, @children, @mknode)
     end
@@ -407,9 +410,23 @@ module Zipr
       end
     end
 
+    # Return a same-shaped structure with the relevant mapping performed on
+    # each node.
+    def map(&unary_block)
+      # It's ridiculous to store the previous zipper to avoid a one-past-the-end
+      # error. It works, but it's _ugly_.
+      prev = @zipper
+      while __has_next? do
+        @zipper = @zipper.replace(unary_block.call(@zipper.value))
+        prev = @zipper
+        @zipper = __next
+      end
+      prev
+    end
+
     private
     def __has_next?
-      @zipper != :end
+      not @zipper.context.end_of_traversal?
     end
 
     # I would just call this "next", but then invoking it requires "self.next",
@@ -435,7 +452,7 @@ module Zipr
       trampoline(@zipper) { |z|
         case z
           when Proc then z = z.call
-          when :end then next :end
+          when z.context.end_of_traversal? then next z
         end
 
         parent = z.safe_up
@@ -448,7 +465,7 @@ module Zipr
           end
         else
           # We've popped up the structure all the way to the root node.
-          next :end
+          next z.new_zipper(z.value, EndOfTraversalContext.new(z.context))
         end
       }
     end
@@ -501,6 +518,10 @@ module Zipr
       @changed
     end
 
+    def end_of_traversal?
+      false
+    end
+
     def root?
       false
     end
@@ -523,6 +544,23 @@ module Zipr
     end
 
     def root?
+      true
+    end
+  end
+
+  # This class does nothing but mark the fact that you've just finished a
+  # traversal of some data structure.
+  class EndOfTraversalContext < Context
+    def initialize(context)
+      super(context.path,
+            context.parent_node,
+            context.left_nodes,
+            context.right_nodes,
+            context.visited_nodes,
+            false)
+    end
+
+    def end_of_traversal?
       true
     end
   end
