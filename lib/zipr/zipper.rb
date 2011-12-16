@@ -183,10 +183,9 @@ module Zipr
     def safe_insert_left(new_node)
       Right.new(new_zipper(value,
                            Context.new(context.path,
-                                       context.parent_node,
+                                       context.parent_nodes,
                                        context.left_nodes + [new_node],
                                        context.right_nodes,
-                                       context.visited_nodes,
                                        true)))
     end
 
@@ -194,10 +193,9 @@ module Zipr
     def safe_insert_right(new_node)
       Right.new(new_zipper(value,
                            Context.new(context.path,
-                                       context.parent_node,
+                                       context.parent_nodes,
                                        context.left_nodes,
                                        [new_node] + context.right_nodes,
-                                       context.visited_nodes,
                                        true)))
     end
 
@@ -208,10 +206,9 @@ module Zipr
         children = children(value)
         Right.new(new_zipper(children.first,
                              Context.new(context,
-                                         value,
+                                         context.parent_nodes + [value],
                                          [],
                                          children.drop(1),
-                                         context.visited_nodes + [value],
                                          false)))
       else
         Left.new(ZipperError.new(:down_at_leaf, self))
@@ -228,10 +225,9 @@ module Zipr
       else
         Right.new(new_zipper(context.left_nodes.last,
                              Context.new(context.path,
-                                         context.parent_node,
+                                         context.parent_nodes,
                                          context.left_nodes[0..-2],
                                          [value] + context.right_nodes,
-                                         context.visited_nodes,
                                          false)))
       end
     end
@@ -248,10 +244,9 @@ module Zipr
         all_but_leftmost = context.left_nodes.drop(1)
         Right.new(new_zipper(context.left_nodes.first,
                              Context.new(context.path,
-                                         context.parent_node,
+                                         context.parent_nodes,
                                          [],
                                          all_but_leftmost + [value] + context.right_nodes,
-                                         context.visited_nodes,
                                          false)))
       end
     end
@@ -266,10 +261,9 @@ module Zipr
       else
         Right.new(new_zipper(context.right_nodes.first,
                              Context.new(context.path,
-                                         context.parent_node,
+                                         context.parent_nodes,
                                          context.left_nodes + [value],
                                          context.right_nodes.drop(1),
-                                         context.visited_nodes,
                                          false)))
       end
     end
@@ -286,10 +280,9 @@ module Zipr
         all_but_rightmost = context.right_nodes[0..-2]
         Right.new(new_zipper(context.right_nodes.last,
                              Context.new(context.path,
-                                         context.parent_node,
+                                         context.parent_nodes,
                                          context.left_nodes + [value] + all_but_rightmost,
                                          [],
-                                         context.visited_nodes,
                                          false)))
       end
     end
@@ -302,22 +295,20 @@ module Zipr
       else
         z = nil
         if context.left_nodes.empty? then
-          z = new_zipper(mknode(context.parent_node, context.right_nodes),
+          z = new_zipper(mknode(context.parent_nodes.last, context.right_nodes),
                          # This could be a Context or a RootContext
                          context.path.class.new(context.path.path,
-                                                context.path.parent_node,
+                                                context.path.parent_nodes,
                                                 context.path.left_nodes,
                                                 context.path.right_nodes,
-                                                context.path.visited_nodes,
                                                 true))
           z
         else
           z = new_zipper(context.left_nodes.last,
                          Context.new(context.path,
-                                     context.parent_node,
+                                     context.parent_nodes,
                                      context.left_nodes.drop(1),
                                      context.right_nodes,
-                                     context.visited_nodes,
                                      true))
           z
         end
@@ -331,10 +322,9 @@ module Zipr
       Right.new(new_zipper(new_node,
                            # This could be a Context or a RootContext
                            context.class.new(context.path,
-                                             context.parent_node,
+                                             context.parent_nodes,
                                              context.left_nodes,
                                              context.right_nodes,
-                                             context.visited_nodes,
                                              true)))
     end
 
@@ -344,7 +334,7 @@ module Zipr
       if context.root? then
         Left.new(ZipperError.new(:up_at_root, self))
       else
-        Right.new(new_zipper(context.visited_nodes.last,
+        Right.new(new_zipper(context.parent_nodes.last,
                              context.path))
       end
     end
@@ -369,7 +359,7 @@ module Zipr
       if context.root? then
         Left.new(ZipperError.new(:up_at_root, self))
       else
-        Right.new(new_zipper(mknode(context.parent_node,
+        Right.new(new_zipper(mknode(context.parent_nodes.last,
                                     context.left_nodes + [value] + context.right_nodes),
                              context.path))
       end
@@ -482,10 +472,9 @@ module Zipr
   # A one-hole context in some arbitrary hierarchical structure
   class Context
     attr_reader :left_nodes
-    attr_reader :parent_node
     attr_reader :path
     attr_reader :right_nodes
-    attr_reader :visited_nodes
+    attr_reader :parent_nodes
 
     def self.root_context
       # This lets us avoid unsightly conditionals in the zipper: the path of no
@@ -493,7 +482,6 @@ module Zipr
       # :root?.
       if @root_context.nil? then
         @root_context = RootContext.new(:ignored,
-                                        :you_should_never_see_the_parent_node_of_a_RootContext,
                                         [],
                                         [],
                                         [],
@@ -502,12 +490,11 @@ module Zipr
       @root_context
     end
 
-    def initialize(path, parent_node, left_nodes, right_nodes, visited_nodes, changed)
+    def initialize(path, parent_nodes, left_nodes, right_nodes, changed)
       @path = path
-      @parent_node = parent_node.freeze
+      @parent_nodes = parent_nodes.freeze
       @left_nodes = left_nodes.freeze
       @right_nodes = right_nodes.freeze
-      @visited_nodes = visited_nodes.freeze
       @changed = changed.freeze
       self.freeze
       # This points to self in a RootContext, so we can only freeze it here.
@@ -522,6 +509,10 @@ module Zipr
       false
     end
 
+    def parent_node
+      parent_nodes.last
+    end
+
     def root?
       false
     end
@@ -530,7 +521,7 @@ module Zipr
       ["left: [#{left_nodes.map{|c|c.to_s}.join(",")}]",
        "value: #{value.to_s}",
        "right: [#{right_nodes.map{|c|c.to_s}.join(",")}]",
-       "parent: #{parent_node.to_s}"].join(", ")
+       "parents: #{parent_nodes.to_s}"].join(", ")
     end
   end
 
@@ -539,8 +530,8 @@ module Zipr
   class RootContext < Context
     # The unused parameter's only there to provide a uniform initialize for the
     # Context classes.
-    def initialize(unused, parent_node, left_nodes, right_nodes, visited_nodes, changed)
-      super(self, parent_node, left_nodes, right_nodes, visited_nodes, changed)
+    def initialize(unused, parent_nodes, left_nodes, right_nodes, changed)
+      super(self, parent_nodes, left_nodes, right_nodes, changed)
     end
 
     def root?
@@ -553,10 +544,9 @@ module Zipr
   class EndOfTraversalContext < Context
     def initialize(context)
       super(context.path,
-            context.parent_node,
+            context.parent_nodes,
             context.left_nodes,
             context.right_nodes,
-            context.visited_nodes,
             false)
     end
 
