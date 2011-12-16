@@ -38,6 +38,7 @@ module Zipr
       @branch = branch
       @children = children
       @mknode = mknode
+      self.freeze
     end
 
     # Is this node a node that may have children? If given a Symbol, send that
@@ -486,11 +487,14 @@ module Zipr
 
     def initialize(path, parent_node, left_nodes, right_nodes, visited_nodes, changed)
       @path = path
-      @parent_node = parent_node
-      @left_nodes = left_nodes
-      @right_nodes = right_nodes
-      @visited_nodes = visited_nodes
-      @changed = changed
+      @parent_node = parent_node.freeze
+      @left_nodes = left_nodes.freeze
+      @right_nodes = right_nodes.freeze
+      @visited_nodes = visited_nodes.freeze
+      @changed = changed.freeze
+      self.freeze
+      # This points to self in a RootContext, so we can only freeze it here.
+      @path.freeze
     end
 
     def changed?
