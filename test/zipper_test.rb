@@ -345,6 +345,13 @@ module Zipr
       z.down.value.should == Leaf.new(3)
     end
 
+    it "should not bother replacing a node with an == node" do
+      original = Leaf.new(1)
+      t = Node.new(:root, [Node.new(:original, [original, Leaf.new(2)])])
+      z = t.zipper.down.down.replace(Leaf.new(1))
+      z.value.should be_equal(original)
+    end
+
     it "should allow editing of a node" do
       t = Node.new(1, [Leaf.new(1)])
       z = t.zipper.down.change {|n| Leaf.new(n.value + 1)}

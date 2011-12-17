@@ -319,13 +319,17 @@ module Zipr
     # Replace the current focus with the given node. You may replace the entire
     # structure if you call this method as your first action on the structure.
     def safe_replace(new_node)
-      Right.new(new_zipper(new_node,
-                           # This could be a Context or a RootContext
-                           context.class.new(context.path,
-                                             context.parent_nodes,
-                                             context.left_nodes,
-                                             context.right_nodes,
-                                             true)))
+      if (new_node == value) then
+        Right.new(self)
+      else
+        Right.new(new_zipper(new_node,
+                             # This could be a Context or a RootContext
+                             context.class.new(context.path,
+                                               context.parent_nodes,
+                                               context.left_nodes,
+                                               context.right_nodes,
+                                               true)))
+      end
     end
 
     # Zip up one step. If called on the root context - the first action on the
