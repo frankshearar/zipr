@@ -8,7 +8,12 @@ require 'rake/testtask'
 CLEAN.include('pkg')
 
 RSpec::Core::RakeTask.new(:test) do |test|
-  test.pattern = 'test/**/*_test.rb'
+  test.pattern = 'test/*_test.rb'
+  test.verbose = true
+end
+
+RSpec::Core::RakeTask.new(:stress_test) do |test|
+  test.pattern = 'test/*_stresstest.rb'
   test.verbose = true
 end
 
@@ -19,6 +24,8 @@ Gem::PackageTask.new(gemspec) do |pkg|
 end
 
 task :default => :install
+
+task :stress_test
 
 task :install => [:clean, :test, :package] do
   sh "gem install pkg/#{gemspec.name}-#{gemspec.version}"
