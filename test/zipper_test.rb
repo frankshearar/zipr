@@ -73,10 +73,10 @@ module Zipr
       new_zipper.value.tag.should == 1
     end
 
-  it "should have down, down, up, up be an idempotent navigation" do
-    t = Node.new(:root, [Node.new(:child, [Leaf.new(:grandchild)])])
-    t.zipper.down.down.up.up.value.should == t
-  end
+    it "should have down, down, up, up be an idempotent navigation" do
+      t = Node.new(:root, [Node.new(:child, [Leaf.new(:grandchild)])])
+      t.zipper.down.down.up.up.value.should == t
+    end
 
     it "should have down then up be an idempotent navigation" do
       property_of {
@@ -338,12 +338,12 @@ module Zipr
       new_zipper.root.should == Tree.new(1, [Tree.new(3, [])])
     end
 
-  it "should move over the replaced node" do
-    t = Node.new(:root, [Node.new(:original, [Leaf.new(1), Leaf.new(2)])])
-    z = t.zipper.down.replace(Node.new(:new, [Leaf.new(3)]))
-    z.value.tag.should == :new
-    z.down.value.should == Leaf.new(3)
-  end
+    it "should move over the replaced node" do
+      t = Node.new(:root, [Node.new(:original, [Leaf.new(1), Leaf.new(2)])])
+      z = t.zipper.down.replace(Node.new(:new, [Leaf.new(3)]))
+      z.value.tag.should == :new
+      z.down.value.should == Leaf.new(3)
+    end
 
     it "should allow editing of a node" do
       t = Node.new(1, [Leaf.new(1)])
