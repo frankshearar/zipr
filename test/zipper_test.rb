@@ -466,6 +466,25 @@ module Zipr
       z.value.value.should == 2
       z.root.should == Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
     end
+
+    it "should return the original structure for any non-mutating navigation" do
+      property_of {
+        sized(50) { tree }
+      }.check { |tree|
+        trav = PreOrderTraversal.new(tree.zipper).map { |n| n }
+        trav.root.equal?(tree).should be_true
+      }
+    end
+
+    it "should share as much of the original structure as possible" do
+      o = Object.new
+      original = Node.new(o, [Leaf.new(1), Leaf.new(2)])
+      new = original.zipper.down.replace(Leaf.new(3)).root
+      new.should == Node.new(o, [Leaf.new(3), Leaf.new(2)])
+
+      original.tag.should be_equal(new.tag)
+      original.children[1].should be_equal(new.children[1])
+    end
   end
 
   describe PreOrderTraversal do
