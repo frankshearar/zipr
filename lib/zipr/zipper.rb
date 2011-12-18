@@ -378,30 +378,10 @@ module Zipr
 
   class Traversal
     def each(&block)
-      raise UnsupportedOperation.new(:each, self)
-    end
-
-    def map(&block)
-      raise UnsupportedOperation.new(:each, self)
-    end
-
-    alias :collect :map
-  end
-
-  class PreOrderTraversal
-    attr_accessor :zipper
-
-    def initialize(zipper)
-      @zipper = zipper
-    end
-
-    # Perform a pre-order traversal. That is, given a tree, process the node,
-    # and then process the child trees from left to right.
-    def each(&unary_block)
-      while __has_next? do
-        unary_block.call(@zipper.value)
-        @zipper = __next
-      end
+      map { |node|
+        block.call(node)
+        node
+      }
     end
 
     # Return a same-shaped structure with the relevant mapping performed on
@@ -410,23 +390,36 @@ module Zipr
       # It's ridiculous to store the previous zipper to avoid a one-past-the-end
       # error. It works, but it's _ugly_.
       prev = @zipper
-      while __has_next? do
+      while has_next? do
         @zipper = @zipper.replace(unary_block.call(@zipper.value))
         prev = @zipper
-        @zipper = __next
+        @zipper = self.next
       end
       prev
     end
 
-    private
-    def __has_next?
+    alias :collect :map
+
+    def has_next?
       not @zipper.context.end_of_traversal?
     end
 
-    # I would just call this "next", but then invoking it requires "self.next",
-    # which forces next to be public. You can't "self.foo" when :foo is private.
-    def __next
-      if not __has_next? then
+    def next
+      raise UnsupportedOperation.new(:next, node)
+    end
+  end
+
+  class PreOrderTraversal < Traversal
+    attr_accessor :zipper
+
+    def initialize(zipper)
+      @zipper = zipper
+    end
+
+    # Perform a pre-order traversal, that is "this node, then a pre-order
+    # traversal of my children, left to right".
+    def next
+      if not has_next? then
         return @zipper
       end
 
