@@ -472,9 +472,14 @@ module Zipr
       property_of {
         sized(50) { tree }
       }.check { |tree|
-        trav = PreOrderTraversal.new(tree.zipper).map { |n| n }
+        trav = tree.zipper.map { |n| n }
         trav.root.equal?(tree).should be_true
       }
+    end
+
+    it "should permit :collect as an alias of :map" do
+      t = Leaf.new(1)
+      t.zipper.collect {|n| n}.root.should == t.zipper.map {|n| n}.root
     end
 
     it "should share as much of the original structure as possible" do

@@ -126,9 +126,11 @@ module Zipr
       safe_insert_right(new_node).value
     end
 
-    def map(traversal = PreOrderTraversal.new, &unary_block)
+    def map(traversal = PreOrderTraversal.new(self), &unary_block)
       traversal.map(&unary_block)
     end
+
+    alias :collect :map
 
     def remove
       safe_remove.either(->z{z},
@@ -375,10 +377,6 @@ module Zipr
   end
 
   class Traversal
-    def collect(&block)
-      map(&block)
-    end
-
     def each(&block)
       raise UnsupportedOperation.new(:each, self)
     end
@@ -386,6 +384,8 @@ module Zipr
     def map(&block)
       raise UnsupportedOperation.new(:each, self)
     end
+
+    alias :collect :map
   end
 
   class PreOrderTraversal
