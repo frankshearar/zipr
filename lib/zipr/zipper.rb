@@ -87,6 +87,10 @@ module Zipr
                        ->e{raise ZipperNavigationError.new(e.error)})
     end
 
+    def fold(initial_value, traversal = PreOrderTraversal.new(self), &binary_block)
+      traversal.fold(initial_value, &binary_block)
+    end
+
     def left
       safe_left.either(->z{z},
                        ->e{raise ZipperNavigationError.new(e.error)})
@@ -109,6 +113,8 @@ module Zipr
       safe_up.either(->z{z},
                      ->e{raise ZipperNavigationError.new(e.error)})
     end
+
+    alias :inject :fold
 
     def insert_child(new_node)
       safe_insert_child(new_node).value
@@ -399,6 +405,19 @@ module Zipr
     end
 
     alias :collect :map
+
+    # Collapse some structure into some kind of value using an initial value,
+    # and a binary block taking the thus-far-computed value (accumulator) and
+    # the current node.
+    def fold(initial_value, &binary_block)
+      accumulator = initial_value
+      each { |node|
+        accumulator = binary_block.call(accumulator, @zipper.value)
+      }
+      accumulator
+    end
+
+    alias :reduce :fold
 
     def has_next?
       not @zipper.context.end_of_traversal?

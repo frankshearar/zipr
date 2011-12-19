@@ -491,6 +491,31 @@ module Zipr
       original.tag.should be_equal(new.tag)
       original.children[1].should be_equal(new.children[1])
     end
+
+    it "should permit the folding of a structure according to a given block" do
+      t = Node.new(:root, [Node.new(:left_subchild, [Leaf.new(1)]), Leaf.new(2)])
+      t.zipper.fold(0) { |sum, node|
+        sum + case node
+                when Node then 0
+                when Leaf then node.value
+              end
+      }.should == 3
+    end
+
+    it "should permit the folding of a structure according to a given " + \
+    "block with a given traversal" do
+      t = Node.new(:root, [Node.new(:left_subchild, [Leaf.new(1)]), Leaf.new(2)])
+      z = t.zipper
+      # TODO: Clearly, this API is less than optimal, with the mention of z
+      # twice: that's asking for an error like
+      # z.fold(0, PreOrderTraversal.new(y)) {}
+      z.fold(0, PreOrderTraversal.new(z)) { |sum, node|
+        sum + case node
+                when Node then 0
+                when Leaf then node.value
+              end
+      }.should == 3
+    end
   end
 
   describe PreOrderTraversal do
@@ -517,6 +542,16 @@ module Zipr
       }
       new_t.class.should == Zipper
       new_t.root.should == Node.new(6, [Leaf.new(2), Leaf.new(4)])
+    end
+
+    it "should permit the folding of a structure according to a given block" do
+      t = Node.new(:root, [Node.new(:left_subchild, [Leaf.new(1)]), Leaf.new(2)])
+      PreOrderTraversal.new(t.zipper).fold(0) { |sum, node|
+        sum + case node
+                when Node then 0
+                when Leaf then node.value
+              end
+      }.should == 3
     end
   end
 end
