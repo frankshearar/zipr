@@ -463,17 +463,15 @@ module Zipr
         end
 
         parent = z.safe_up
-        if parent.right? then
-          uncle = z.safe_up.then {|z| z.safe_right }
-          if uncle.right? then
-            next uncle.value
-          else
-            next ->{parent.value} # Recur
-          end
-        else
-          # We've popped up the structure all the way to the root node.
-          next z.new_zipper(z.value, EndOfTraversalContext.new(z.context))
-        end
+        parent.either(->parent_z{
+                        uncle = parent_z.safe_right
+                        uncle.either(->z{ next z},
+                                     ->unused_error{ next ->{parent_z}}) # Recur
+                      },
+                      ->unused_error{
+                        # We've popped up the structure all the way to the root node.
+                        z.new_zipper(z.value, EndOfTraversalContext.new(z.context))
+                      })
       }
     end
 
