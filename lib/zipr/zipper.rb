@@ -451,7 +451,8 @@ module Zipr
         return right_sibling.value
       end
 
-      # Return a Zipper if there's a next, or :end if there isn't.
+      # Return a Zipper if there's a next, with a distinguishable context
+      # for the last element of the traversal.
       # This algorithm returns a thunk when it wishes to recurse.
       # The trampoline converts this CPS-like algorithm into one
       # that runs in constant space.
