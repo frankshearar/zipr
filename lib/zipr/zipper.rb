@@ -466,11 +466,6 @@ module Zipr
       # The trampoline converts this CPS-like algorithm into one
       # that runs in constant space.
       trampoline(@zipper) { |z|
-        case z
-          when Proc then z = z.call
-          when z.context.end_of_traversal? then next z
-        end
-
         parent = z.safe_up
         parent.either(->parent_z{
                         uncle = parent_z.safe_right
