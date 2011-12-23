@@ -565,4 +565,3 @@ module Zipr
     end
   end
 end
-
