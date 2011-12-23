@@ -1,4 +1,5 @@
 require 'zipr/either'
+require 'zipr/trampoline'
 require 'zipr/unsupported-operation'
 
 module Zipr
@@ -24,6 +25,8 @@ module Zipr
   # provide a terser navigation, at the risk of raising an exception. A chain of
   # safe operations simply returns the first error encountered.
   class Zipper
+    include Boing
+
     attr_reader :value
     attr_reader :context
 
@@ -310,14 +313,22 @@ module Zipr
                                                       context.path.right_nodes,
                                                       true)))
         else
-          Right.new(new_zipper(context.left_nodes.last,
-                               Context.new(context.path,
-                                           context.parent_nodes,
-                                           context.left_nodes.drop(1),
-                                           context.right_nodes,
-                                           true)))
+          prev = trampoline(remove_then_left) { |z|
+            z.safe_down.either(->child{ ->{child.rightmost} },
+                               ->e{ z })
+          }
+          Right.new(prev)
         end
       end
+    end
+
+    def remove_then_left
+      new_zipper(context.left_nodes.last,
+                 Context.new(context.path,
+                             context.parent_nodes,
+                             context.left_nodes.drop(1),
+                             context.right_nodes,
+                             true))
     end
 
     # Replace the current focus with the given node. You may replace the entire
@@ -379,6 +390,8 @@ module Zipr
   end
 
   class Traversal
+    include Boing
+
     def each(&block)
       map { |node|
         block.call(node)
@@ -469,14 +482,6 @@ module Zipr
                         z.new_zipper(z.value, EndOfTraversalContext.new(z.context))
                       })
       }
-    end
-
-    def trampoline(initial_value, &unary_block)
-      result = unary_block.call(initial_value)
-      while result.kind_of?(Proc) do
-        result = unary_block.call(result)
-      end
-      result
     end
   end
 

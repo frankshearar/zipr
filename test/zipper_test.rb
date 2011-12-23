@@ -454,11 +454,12 @@ module Zipr
       z.root.should == Tree.new(1, [Tree.new(2, [])])
     end
 
-    it "should move to the parent after deleting the leftmost child" do
-      t = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
-      z = t.zipper.down.remove
-      z.value.value.should == 1
-      z.root.should == Tree.new(1, [Tree.new(3, [])])
+    it "should move to the 'previous' node after deleting the leftmost child" do
+      # Pre-order traversal yields 1-2-3-4-5
+      t = Tree.new(1, [Tree.new(2, [Tree.new(3, []), Tree.new(4, [])]), Tree.new(5, [])])
+      z = t.zipper.down.right.remove
+      z.value.value.should == 4
+      z.root.should == Tree.new(1, [Tree.new(2, [Tree.new(3, []), Tree.new(4, [])])])
     end
 
     it "should move to the parent after deleting the leftmost child within a subtree" do
