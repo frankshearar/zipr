@@ -301,26 +301,22 @@ module Zipr
       if context.root? then
         Left.new(ZipperError.new(:remove_at_root, self))
       else
-        z = nil
         if context.left_nodes.empty? then
-          z = new_zipper(mknode(context.parent_nodes.last, context.right_nodes),
-                         # This could be a Context or a RootContext
-                         context.path.class.new(context.path.path,
-                                                context.path.parent_nodes,
-                                                context.path.left_nodes,
-                                                context.path.right_nodes,
-                                                true))
-          z
+          Right.new(new_zipper(mknode(context.parent_nodes.last, context.right_nodes),
+                               # This could be a Context or a RootContext
+                               context.path.class.new(context.path.path,
+                                                      context.path.parent_nodes,
+                                                      context.path.left_nodes,
+                                                      context.path.right_nodes,
+                                                      true)))
         else
-          z = new_zipper(context.left_nodes.last,
-                         Context.new(context.path,
-                                     context.parent_nodes,
-                                     context.left_nodes.drop(1),
-                                     context.right_nodes,
-                                     true))
-          z
+          Right.new(new_zipper(context.left_nodes.last,
+                               Context.new(context.path,
+                                           context.parent_nodes,
+                                           context.left_nodes.drop(1),
+                                           context.right_nodes,
+                                           true)))
         end
-        Right.new(z)
       end
     end
 
