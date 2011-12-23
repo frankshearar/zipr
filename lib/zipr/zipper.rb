@@ -322,15 +322,6 @@ module Zipr
       end
     end
 
-    def remove_then_left
-      new_zipper(context.left_nodes.last,
-                 Context.new(context.path,
-                             context.parent_nodes,
-                             context.left_nodes.drop(1),
-                             context.right_nodes,
-                             true))
-    end
-
     # Replace the current focus with the given node. You may replace the entire
     # structure if you call this method as your first action on the structure.
     def safe_replace(new_node)
@@ -386,6 +377,16 @@ module Zipr
 
     def new_zipper(value, context)
       Zipper.new(value, context, @branch, @children, @mknode)
+    end
+
+    private
+    def remove_then_left
+      new_zipper(context.left_nodes.last,
+                 Context.new(context.path,
+                             context.parent_nodes,
+                             context.left_nodes.drop(1),
+                             context.right_nodes,
+                             true))
     end
   end
 
