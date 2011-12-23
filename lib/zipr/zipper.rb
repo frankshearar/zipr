@@ -299,7 +299,8 @@ module Zipr
     end
 
     # Remove the current focus. If possible, move to the left sibling. Otherwise,
-    # move to the parent.
+    # move to the node that would appear as the previous node in a pre-order
+    # traversal.
     def safe_remove
       if context.root? then
         Left.new(ZipperError.new(:remove_at_root, self))
