@@ -14,6 +14,7 @@ Unsafe navigation's suited for when you know the precise path to some node, allo
 Safe navigation's suited for exploring a structure whose structure you don't know.
 
 When we create the zipper, we give it:
+
 1. a value in the structure
 2. a context (if we're starting navigation this will be a RootContext).
 3. a trio of behaviours describing
