@@ -18,9 +18,9 @@ When we create the zipper, we give it:
 1. a value in the structure
 2. a context (if we're starting navigation this will be a RootContext).
 3. a trio of behaviours describing
-3.1. whether a node has children
-3.2. what those children are
-3.3. how to make a fresh node
+    1. whether a node has children
+    2. what those children are
+    3. how to make a fresh node
 
 Those three behaviours may be a Proc or a Symbol naming a method:
 
