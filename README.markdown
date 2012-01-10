@@ -3,7 +3,7 @@ A [Huet-style zipper](http://www.st.cs.uni-saarland.de/edu/seminare/2005/advance
 Basic architecture
 ------------------
 
-The framework supplies two ways of navigating through a structure. "Safe navigation" methods are named safe_foo, and uses the `Either` monad: attempting to move off the structure returns a `Left` indicating the error; otherwise, we get a `Right` containing a `Zipper` on the next position. "Unsafe navigation" methods are just like the safe ones, only without a "safe_" prefix.
+The framework supplies two ways of navigating through a structure. "Safe navigation" methods are named safe\_foo, and uses the `Either` monad: attempting to move off the structure returns a `Left` indicating the error; otherwise, we get a `Right` containing a `Zipper` on the next position. "Unsafe navigation" methods are just like the safe ones, only without a "safe\_" prefix.
 
 Unsafe navigation's suited for when you know the precise path to some node, allowing for terse code:
 
