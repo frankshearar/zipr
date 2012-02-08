@@ -564,5 +564,19 @@ module Zipr
          if node.children.empty? then 1 else 1 + sum end].max
       }.should == 3
     end
+
+  describe BreadthFirstTraversal do
+    it "should process all nodes in a breadth first fashion" do
+      tree = Tree.new(1, [Tree.new(2, [Tree.new(4, []),
+                                       Tree.new(5, [])]),
+                          Tree.new(3, [Tree.new(6, []),
+                                       Tree.new(7, [])])])
+      t = BreadthFirstTraversal.new(tree.zipper)
+      answers = []
+      t.each { |value|
+        answers << value.value
+      }
+      answers.should == [1, 2, 3, 4, 5, 6, 7]
+    end
   end
 end

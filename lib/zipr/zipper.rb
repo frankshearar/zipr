@@ -394,6 +394,12 @@ module Zipr
   class Traversal
     include Boing
 
+    attr_accessor :zipper
+
+    def initialize(zipper)
+      @zipper = zipper
+    end
+
     def each(&block)
       map { |node|
         block.call(node)
@@ -478,6 +484,38 @@ module Zipr
                         # We've popped up the structure all the way to the root node.
                         z.new_zipper(z.value, EndOfTraversalContext.new(z.context))
                       })
+      }
+    end
+  end
+
+  class BreadthFirstTraversal < Traversal
+    def initialize(zipper)
+      super(zipper)
+      @queue = []
+      @visited = []
+      self.enqueue_unmarked_children(@zipper)
+    end
+
+    def next
+      if (@queue.empty?) then
+        return @zipper.new_zipper(@zipper.value,
+                                  EndOfTraversalContext.new(@zipper.context))
+      end
+       @visited << @zipper.value
+
+      @zipper = @queue.first
+      @queue = @queue.drop(1)
+      self.enqueue_unmarked_children(@zipper)
+      return @zipper
+    end
+
+    def enqueue_unmarked_children(zipper)
+      trampoline(zipper.safe_down) { | z_lr |
+        z_lr.either(->z{
+                      @queue << z unless @visited.include?(z.value)
+                      next ->{z.safe_right}
+                    },
+                    ->unused_error{next unused_error.location})
       }
     end
   end
