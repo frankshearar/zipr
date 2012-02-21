@@ -86,8 +86,8 @@ module Zipr
     end
 
     def down
-      safe_down.either(->z{z},
-                       ->e{raise ZipperNavigationError.new(e.error)})
+      safe_down.either(Proc.new {|z| z},
+                       Proc.new {|e| raise ZipperNavigationError.new(e.error)})
     end
 
     def fold(initial_value, traversal = PreOrderTraversal.new(self), &binary_block)
@@ -95,8 +95,8 @@ module Zipr
     end
 
     def left
-      safe_left.either(->z{z},
-                       ->e{raise ZipperNavigationError.new(e.error)})
+      safe_left.either(Proc.new {|z| z},
+                       Proc.new {|e| raise ZipperNavigationError.new(e.error)})
     end
 
     def leftmost
@@ -104,8 +104,8 @@ module Zipr
     end
 
     def right
-      safe_right.either(->z{z},
-                        ->e{raise ZipperNavigationError.new(e.error)})
+      safe_right.either(Proc.new {|z| z},
+                        Proc.new {|e| raise ZipperNavigationError.new(e.error)})
     end
 
     def rightmost
@@ -113,8 +113,8 @@ module Zipr
     end
 
     def up
-      safe_up.either(->z{z},
-                     ->e{raise ZipperNavigationError.new(e.error)})
+      safe_up.either(Proc.new {|z| z},
+                     Proc.new {|e| raise ZipperNavigationError.new(e.error)})
     end
 
     alias :inject :fold
@@ -142,8 +142,8 @@ module Zipr
     alias :collect :map
 
     def remove
-      safe_remove.either(->z{z},
-                         ->e{raise ZipperNavigationError.new(e.error)})
+      safe_remove.either(Proc.new {|z| z},
+                         Proc.new {|e| raise ZipperNavigationError.new(e.error)})
     end
 
     def replace(new_node)
@@ -314,9 +314,9 @@ module Zipr
                                                       context.path.right_nodes,
                                                       true)))
         else
-          prev = trampoline(remove_then_left) { |z|
-            z.safe_down.either(->child{ ->{child.rightmost} },
-                               ->e{ z })
+          prev = trampoline(remove_then_left) {|z|
+            z.safe_down.either(Proc.new {|child| child.rightmost},
+                               Proc.new {|e| z })
           }
           Right.new(prev)
         end
@@ -349,7 +349,7 @@ module Zipr
                              context.path))
       end
     end
-    
+
     # An internal method. Zip up a mutated structure.
     def __changed_root
       if context.root? then
@@ -358,14 +358,14 @@ module Zipr
         __changed_up.__changed_root
       end
     end
-    
+
     def __changed_up
-      __safe_changed_up.either(->z{z},
-                               ->e{raise ZipperNavigationError.new(e.error)})
+      __safe_changed_up.either(Proc.new {|z| z},
+                               Proc.new {|e| raise ZipperNavigationError.new(e.error)})
     end
 
     # An internal method. The zipper uses this recursion to record in the call
-    # stack that the structure has changed.    
+    # stack that the structure has changed.
     def __safe_changed_up
       if context.root? then
         Left.new(ZipperError.new(:up_at_root, self))
@@ -395,7 +395,7 @@ module Zipr
     include Boing
 
     def each(&block)
-      map { |node|
+      map {|node|
         block.call(node)
         node
       }
@@ -422,7 +422,7 @@ module Zipr
     # the current node.
     def fold(initial_value, &binary_block)
       accumulator = initial_value
-      each { |node|
+      each {|node|
         accumulator = binary_block.call(accumulator, @zipper.value)
       }
       accumulator
@@ -467,14 +467,14 @@ module Zipr
       # This algorithm returns a thunk when it wishes to recurse.
       # The trampoline converts this CPS-like algorithm into one
       # that runs in constant space.
-      trampoline(@zipper) { |z|
+      trampoline(@zipper) {|z|
         parent = z.safe_up
-        parent.either(->parent_z{
+        parent.either(Proc.new {|parent_z|
                         uncle = parent_z.safe_right
-                        uncle.either(->z{ next z},
-                                     ->unused_error{ next ->{parent_z}}) # Recur
+                        uncle.either(Proc.new {|z| next z},
+                              Proc.new {|unused_error| next lambda {parent_z}}) # Recur
                       },
-                      ->unused_error{
+               Proc.new {|unused_error|
                         # We've popped up the structure all the way to the root node.
                         z.new_zipper(z.value, EndOfTraversalContext.new(z.context))
                       })

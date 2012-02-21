@@ -7,11 +7,11 @@ require 'zipr/rantly-extensions'
 module Zipr
   describe Zipper do
     it "should allow zipping on a structure" do
-      Zipper.zip_on(Leaf.new(1), ->x{false}, ->x{[]}, ->x,kids{nil}).should_not be_nil
+      Zipper.zip_on(Leaf.new(1), Proc.new {|x| false}, Proc.new {|x| []}, Proc.new {|x,kids|nil}).should_not be_nil
     end
 
     it "should allow zipping over an arbitrary structure" do
-      z = Zipper.zip_on([1, [2, 3], 4], ->x{x.kind_of? Array}, ->x{x}, ->x,kids{ :as_yet_unused })
+      z = Zipper.zip_on([1, [2, 3], 4], Proc.new {|x| x.kind_of? Array}, Proc.new {|x| x}, Proc.new {|x,kids| :as_yet_unused })
       z1 = z.down
       z1.value.should == 1
       z2 = z1.right
@@ -49,9 +49,9 @@ module Zipr
     end
 
     it "should have unsafe down fail on a leaf" do
-      ->{
+      lambda {
         Leaf.new(1).zipper.down
-      }.should raise_error(ZipperNavigationError) { |e|
+      }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :down_at_leaf"
       }
     end
@@ -90,9 +90,9 @@ module Zipr
     end
 
     it "should have unsafe up on the root node fail" do
-      ->{
+      lambda {
         Leaf.new(1).zipper.up
-      }.should raise_error(ZipperNavigationError) { |e|
+      }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :up_at_root"
       }
     end
@@ -117,9 +117,9 @@ module Zipr
 
     it "should have unsafe left fail on root node" do
       t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
-      ->{
+      lambda {
         t.zipper.left
-      }.should raise_error(ZipperNavigationError) { |e|
+      }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :left_at_root"
       }
     end
@@ -142,9 +142,9 @@ module Zipr
 
     it "should have unsafe left fail on a leftmost child" do
       t = Node.new(1, [Leaf.new(1)])
-      ->{
+      lambda {
         z = t.zipper.down.left
-      }.should raise_error(ZipperNavigationError) { |e|
+      }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :left_at_leftmost"
       }
     end
@@ -177,9 +177,9 @@ module Zipr
 
     it "should have unsafe right fail on root node" do
       t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
-      ->{
+      lambda {
         t.zipper.right
-      }.should raise_error(ZipperNavigationError) { |e|
+      }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :right_at_root"
       }
     end
@@ -204,9 +204,9 @@ module Zipr
     it "should have unsafe right fail on the rightmost child" do
       t = Node.new(1, [Leaf.new(1)])
       z = t.zipper.down
-      ->{
+      lambda {
         z.right
-      }.should raise_error(ZipperNavigationError) { |e|
+      }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :right_at_rightmost"
       }
     end
@@ -433,9 +433,9 @@ module Zipr
     end
 
     it "should have unsafe delete at root fail" do
-      ->{
+      lambda {
         Tree.new(1, []).zipper.remove
-      }.should raise_error(ZipperNavigationError) { |e|
+      }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :remove_at_root"
       }
     end
@@ -472,8 +472,8 @@ module Zipr
     it "should return the original structure for any non-mutating navigation" do
       property_of {
         sized(50) { tree }
-      }.check { |tree|
-        trav = tree.zipper.map { |n| n }
+      }.check {|tree|
+        trav = tree.zipper.map {|n| n }
         trav.root.equal?(tree).should be_true
       }
     end
@@ -495,7 +495,7 @@ module Zipr
 
     it "should permit the folding of a structure according to a given block" do
       t = Node.new(:root, [Node.new(:left_subchild, [Leaf.new(1)]), Leaf.new(2)])
-      t.zipper.fold(0) { |sum, node|
+      t.zipper.fold(0) {|sum, node|
         sum + case node
                 when Node then 0
                 when Leaf then node.value
@@ -510,7 +510,7 @@ module Zipr
       # TODO: Clearly, this API is less than optimal, with the mention of z
       # twice: that's asking for an error like
       # z.fold(0, PreOrderTraversal.new(y)) {}
-      z.fold(0, PreOrderTraversal.new(z)) { |sum, node|
+      z.fold(0, PreOrderTraversal.new(z)) {|sum, node|
         sum + case node
                 when Node then 0
                 when Leaf then node.value
@@ -526,7 +526,7 @@ module Zipr
                                        Tree.new(6, [])])])
       t = PreOrderTraversal.new(tree.zipper)
       answers = []
-      t.each { |value|
+      t.each {|value|
         answers << value.value
       }
       answers.should == [1, 2, 3, 4, 5, 6]
@@ -535,7 +535,7 @@ module Zipr
     it "should have map produce a structure of the same shape" do
       tree = Node.new(2, [Leaf.new(1), Leaf.new(2)])
       t = PreOrderTraversal.new(tree.zipper)
-      new_t = t.map { |node|
+      new_t = t.map {|node|
         case node
           when Node then Node.new(node.tag * 3, node.children)
           when Leaf then Leaf.new(node.value * 2)
@@ -547,7 +547,7 @@ module Zipr
 
     it "should permit the folding of a structure according to a given block (1)" do
       t = Node.new(:root, [Node.new(:left_subchild, [Leaf.new(1)]), Leaf.new(2)])
-      PreOrderTraversal.new(t.zipper).fold(0) { |sum, node|
+      PreOrderTraversal.new(t.zipper).fold(0) {|sum, node|
         sum + case node
                 when Node then 0
                 when Leaf then node.value
@@ -559,7 +559,7 @@ module Zipr
       tree = Tree.new(1, [Tree.new(2, [Tree.new(3, [])]),
                           Tree.new(4, [Tree.new(5, []),
                                        Tree.new(6, [])])])
-      PreOrderTraversal.new(tree.zipper).fold(0) { |sum, node|
+      PreOrderTraversal.new(tree.zipper).fold(0) {|sum, node|
         [sum,
          if node.children.empty? then 1 else 1 + sum end].max
       }.should == 3
