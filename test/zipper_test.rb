@@ -564,6 +564,7 @@ module Zipr
          if node.children.empty? then 1 else 1 + sum end].max
       }.should == 3
     end
+  end
 
   describe BreadthFirstTraversal do
     it "should process all nodes in a breadth first fashion" do
