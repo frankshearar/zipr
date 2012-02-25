@@ -490,11 +490,11 @@ module Zipr
 
     def enqueue_unmarked_children(zipper)
       trampoline(zipper.safe_down) { | z_lr |
-        z_lr.either(->z{
+        z_lr.either(Proc.new { |z|
                       @queue << z unless @visited.include?(z.value)
-                      next ->{z.safe_right}
+                      next Proc.new {z.safe_right}
                     },
-                    ->unused_error{next unused_error.location})
+                    Proc.new { |unused_error| next unused_error.location})
       }
     end
   end
