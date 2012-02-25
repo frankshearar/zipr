@@ -97,6 +97,18 @@ module Zipr
       }
     end
 
+    it "should have up preserve mutations to child nodes" do
+      z = Node.new(1, [Leaf.new(1)]).zipper
+      new_t = z.down.replace(Leaf.new(2)).up.root
+      new_t.should == Node.new(1, [Leaf.new(2)])
+    end
+
+    it "should have up preserve mutations to deep child nodes" do
+      z = Node.new(1, [Node.new(2, [Leaf.new(3)])]).zipper
+      new_t = z.down.down.replace(Leaf.new(4)).up.up.root
+      new_t.should == Node.new(1, [Node.new(2, [Leaf.new(4)])])
+    end
+
     it "should have left fail on a leftmost child" do
       t = Node.new(1, [Leaf.new(1)])
       loc = t.zipper.down
@@ -563,6 +575,40 @@ module Zipr
         [sum,
          if node.children.empty? then 1 else 1 + sum end].max
       }.should == 3
+    end
+  end
+
+  describe BreadthFirstTraversal do
+    it "should process all nodes in a breadth first fashion" do
+      tree = Tree.new(1, [Tree.new(2, [Tree.new(4, []),
+                                       Tree.new(5, [])]),
+                          Tree.new(3, [Tree.new(6, []),
+                                       Tree.new(7, [])])])
+      t = BreadthFirstTraversal.new(tree.zipper)
+      answers = []
+      t.each { |value|
+        answers << value.value
+      }
+      answers.should == [1, 2, 3, 4, 5, 6, 7]
+    end
+  end
+
+  describe Context do
+    describe :copy_as_changed do
+      it "should copy everything except changed" do
+        c = Context.new(:path, :parent_nodes, :left_nodes, :right_nodes, :changed)
+        c_new = c.copy_as_changed
+        c_new.path.equal?(c.path).should be_true
+        c_new.parent_nodes.equal?(c.parent_nodes).should be_true
+        c_new.left_nodes.equal?(c.left_nodes).should be_true
+        c_new.right_nodes.equal?(c.right_nodes).should be_true
+        c_new.should be_changed
+      end
+
+      it "should return a RootContext unchanged" do
+        c = Context.root_context
+        c.equal?(c.copy_as_changed).should be_true
+      end
     end
   end
 end
