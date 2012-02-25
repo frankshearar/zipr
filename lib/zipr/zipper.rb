@@ -155,11 +155,7 @@ module Zipr
       if context.root? then
         @value
       else
-        if context.changed? then
-          __changed_up.__changed_root
-        else
-          up.root
-        end
+        up.root
       end
     end
 
@@ -345,37 +341,20 @@ module Zipr
       if context.root? then
         Left.new(ZipperError.new(:up_at_root, self))
       else
-        Right.new(new_zipper(context.parent_nodes.last,
-                             context.path))
+        if (context.changed?) then
+          # Once we have a mutation, we must create new nodes. We replace
+          # the contexts with copies+changed=true versions to remember that
+          # we've changed something.
+          Right.new(new_zipper(mknode(context.parent_nodes.last,
+                                      context.left_nodes + [value] + context.right_nodes),
+                               context.path.copy_as_changed))
+        else
+          Right.new(new_zipper(context.parent_nodes.last,
+                               context.path))
+        end
       end
     end
     
-    # An internal method. Zip up a mutated structure.
-    def __changed_root
-      if context.root? then
-        @value
-      else
-        __changed_up.__changed_root
-      end
-    end
-    
-    def __changed_up
-      __safe_changed_up.either(->z{z},
-                               ->e{raise ZipperNavigationError.new(e.error)})
-    end
-
-    # An internal method. The zipper uses this recursion to record in the call
-    # stack that the structure has changed.    
-    def __safe_changed_up
-      if context.root? then
-        Left.new(ZipperError.new(:up_at_root, self))
-      else
-        Right.new(new_zipper(mknode(context.parent_nodes.last,
-                                    context.left_nodes + [value] + context.right_nodes),
-                             context.path))
-      end
-    end
-
     def new_zipper(value, context)
       Zipper.new(value, context, @branch, @children, @mknode)
     end
@@ -523,8 +502,14 @@ module Zipr
   # A one-hole context in some arbitrary hierarchical structure
   class Context
     attr_reader :left_nodes
+    # The path taken through the structure to this context. A nested sequence of
+    # Contexts terminating in an innermost RootContext representing a sequence
+    # of edits/navigations.
     attr_reader :path
     attr_reader :right_nodes
+    # A sequence of nodes representing the path from the entry point/root node
+    # of the structure to this context. parent_nodes.first is the parent of the
+    # hole, parent_nodes[1] the grandparent, and so on.
     attr_reader :parent_nodes
 
     def self.root_context
@@ -556,6 +541,10 @@ module Zipr
       @changed
     end
 
+    def copy_as_changed
+      self.class.new(path, parent_nodes, left_nodes, right_nodes, true)
+    end
+
     def end_of_traversal?
       false
     end
@@ -583,6 +572,11 @@ module Zipr
     # Context classes.
     def initialize(unused, parent_nodes, left_nodes, right_nodes, changed)
       super(self, parent_nodes, left_nodes, right_nodes, changed)
+    end
+
+    def copy_as_changed
+      # Root contexts mark the start of a navigation; you can't change them.
+      self
     end
 
     def root?
