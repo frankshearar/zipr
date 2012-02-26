@@ -209,6 +209,11 @@ module Zipr
     # Move the context to the first (leftmost) child node.
     # Return a Left if the current focus has no children.
     def safe_down
+      # Unlike left and right, down doesn't demonstrate the problem of losing
+      # changes because new contexts form a path through the changed node. As
+      # a result, "up" will eventually pass through the "this has changed"
+      # context, and the change will be preserved. We pass the context.changed?
+      # here anyway for uniformity.
       if branch?(value) then
         children = children(value)
         Right.new(new_zipper(children.first,
@@ -216,7 +221,7 @@ module Zipr
                                          context.parent_nodes + [value],
                                          [],
                                          children.drop(1),
-                                         false)))
+                                         context.changed?)))
       else
         Left.new(ZipperError.new(:down_at_leaf, self))
       end
@@ -235,7 +240,7 @@ module Zipr
                                          context.parent_nodes,
                                          context.left_nodes[0..-2],
                                          [value] + context.right_nodes,
-                                         false)))
+                                         context.changed?)))
       end
     end
 
@@ -254,7 +259,7 @@ module Zipr
                                          context.parent_nodes,
                                          [],
                                          all_but_leftmost + [value] + context.right_nodes,
-                                         false)))
+                                         context.changed?)))
       end
     end
 
@@ -271,7 +276,7 @@ module Zipr
                                          context.parent_nodes,
                                          context.left_nodes + [value],
                                          context.right_nodes.drop(1),
-                                         false)))
+                                         context.changed?)))
       end
     end
 
@@ -290,7 +295,7 @@ module Zipr
                                          context.parent_nodes,
                                          context.left_nodes + [value] + all_but_rightmost,
                                          [],
-                                         false)))
+                                         context.changed?)))
       end
     end
 

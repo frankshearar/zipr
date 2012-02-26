@@ -529,6 +529,43 @@ module Zipr
               end
       }.should == 3
     end
+
+    describe "change marker" do
+      it "should be remembered when moving to the left" do
+        t = Node.new(:root, [Leaf.new(:left), Leaf.new(:right)])
+        z = t.zipper
+        new_t = z.down.right.replace(Leaf.new(:regs)).left.root
+        new_t.should == Node.new(:root, [Leaf.new(:left), Leaf.new(:regs)])
+      end
+
+      it "should be remembered when moving leftmost" do
+        t = Node.new(:root, [Leaf.new(:left), Leaf.new(:right)])
+        z = t.zipper
+        new_t = z.down.right.replace(Leaf.new(:regs)).leftmost.root
+        new_t.should == Node.new(:root, [Leaf.new(:left), Leaf.new(:regs)])
+      end
+
+      it "should be remembered when moving to the right" do
+        t = Node.new(:root, [Leaf.new(:left), Leaf.new(:right)])
+        z = t.zipper
+        new_t = z.down.replace(Leaf.new(:links)).right.root
+        new_t.should == Node.new(:root, [Leaf.new(:links), Leaf.new(:right)])
+      end
+
+      it "should be remembered when moving rightmost" do
+        t = Node.new(:root, [Leaf.new(:left), Leaf.new(:right)])
+        z = t.zipper
+        new_t = z.down.replace(Leaf.new(:links)).rightmost.root
+        new_t.should == Node.new(:root, [Leaf.new(:links), Leaf.new(:right)])
+      end
+
+      it "should be remembered when moving down" do
+        t = Node.new(1, [Node.new(2, [Leaf.new(3)])])
+        z = t.zipper
+        new_t = z.down.change {|n| Node.new(n.tag + 1, n.children)}.down.root
+        new_t.should == Node.new(1, [Node.new(3, [Leaf.new(3)])])
+      end
+    end
   end
 
   describe PreOrderTraversal do
