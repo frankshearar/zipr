@@ -7,6 +7,7 @@ if sexp_loaded then
   describe Sexp do
     describe "creating a zipper" do
       s().zipper.class.should == Zipr::Zipper
+      s(s(s(3))).zipper.down.down.insert_child(4).root.should == s(s(s(4, 3)))
     end
 
     describe "branching" do
@@ -16,7 +17,7 @@ if sexp_loaded then
         z.branch?(s()).should be_true
         z.branch?({}).should be_true
       end
-      
+
       it "should return false for everything else" do
         z = s().zipper
         z.branch?(1).should be_false
