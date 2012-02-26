@@ -563,10 +563,12 @@ module Zipr
     end
 
     def debug_string(value)
-      ["left: [#{left_nodes.map{|c|c.to_s}.join(",")}]",
+      ["type: #{self.class.name}",
+       "left: [#{left_nodes.map{|c|c.to_s}.join(",")}]",
        "value: #{value.to_s}",
        "right: [#{right_nodes.map{|c|c.to_s}.join(",")}]",
-       "parents: #{parent_nodes.to_s}"].join(", ")
+       "parents: #{parent_nodes.to_s}",
+       "changed: #{@changed.inspect}"].join(", ")
     end
   end
 
