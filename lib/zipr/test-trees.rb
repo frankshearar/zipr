@@ -97,6 +97,10 @@ module Zipr
       subtree_size = children.map {|c| c.size}.reduce(:+)
       (subtree_size || 0) + 1
     end
+
+    def to_s
+      "(#{tag.to_s} [#{children.map { |c| c.to_s }.join(', ')}])"
+    end
   end
 
   class Leaf < TaggedTree
@@ -130,6 +134,10 @@ module Zipr
     def size
       1
     end
+
+    def to_s
+      @value.to_s
+    end
   end
 
   class EmptyTree < TaggedTree
@@ -150,6 +158,10 @@ module Zipr
 
     def size
       0
+    end
+
+    def to_s
+      "#"
     end
   end
 end

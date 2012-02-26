@@ -92,6 +92,20 @@ module Zipr
     it "should not == tree with different children" do
       Node.new(1, []).hash.should_not == Node.new(1, [Leaf.value(1)]).hash
     end
+
+    describe :to_s do
+      it "should print malformed leaf Nodes properly" do
+        Node.new(1, []).to_s.should == "(1 [])"
+      end
+
+      it "should print children" do
+        Node.new(1, [Leaf.new(2), EmptyTree.new, Leaf.new(3)]).to_s.should == "(1 [2, #, 3])"
+      end
+
+      it "should print nested trees" do
+        Node.new(1, [Node.new(2, [Leaf.new(3)])]).to_s.should == "(1 [(2 [3])])"
+      end
+    end
   end
 
   describe Leaf do
@@ -150,6 +164,13 @@ module Zipr
         Leaf.value(i).hash.should_not == Leaf.value(j).hash
       }
     end
+
+    describe :to_s do
+      it "should print as its value" do
+        Leaf.new(1).to_s.should == "1"
+        Leaf.new(2).to_s.should == "2"
+      end
+    end
   end
 
   describe EmptyTree do
@@ -167,6 +188,12 @@ module Zipr
 
     it "should have a size of 0" do
       EmptyTree.new.size.should == 0
+    end
+
+    describe :to_s do
+      it "should print as a special character" do
+        EmptyTree.new.to_s.should == "#"
+      end
     end
   end
 end
