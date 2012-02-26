@@ -32,7 +32,7 @@ module Zipr
     end
 
     def zipper
-      mknode = Proc.new {|value,children|
+      mknode = -> value,children {
         case value
           when Tree then Tree.new(value.value, children)
           else Tree.new(value, children)
@@ -49,7 +49,7 @@ module Zipr
     end
 
     def zipper
-      mknode = Proc.new {|value,children|
+      mknode = -> value,children {
         if children.empty? then
           Leaf.new(value)
         else

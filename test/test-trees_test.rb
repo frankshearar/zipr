@@ -35,12 +35,12 @@ module Zipr
     it "should have an immutable list of children" do
       arr = [1, 2].map {|i| Leaf.new(i)}
       n = Node.new(1, arr)
-      lambda {n.children << Leaf.new(3)}.should raise_error
+      ->{n.children << Leaf.new(3)}.should raise_error
     end
 
     it "should have an immutable tag" do
       n = Node.new([], [])
-      lambda {n.tag << 1}.should raise_error
+      ->{n.tag << 1}.should raise_error
     end
 
     it "should have a depth of the deepest subtree, plus 1" do
@@ -115,7 +115,7 @@ module Zipr
 
     it "should have an immutable value" do
       l = Leaf.new([])
-      lambda {l.value << 1}.should raise_error
+      ->{l.value << 1}.should raise_error
     end
 
     it "should have a depth of 1" do

@@ -7,11 +7,11 @@ require 'zipr/rantly-extensions'
 module Zipr
   describe Zipper do
     it "should allow zipping on a structure" do
-      Zipper.zip_on(Leaf.new(1), Proc.new {|x| false}, Proc.new {|x| []}, Proc.new {|x,kids|nil}).should_not be_nil
+      Zipper.zip_on(Leaf.new(1), ->x{false}, ->x{[]}, -> x,kids {nil}).should_not be_nil
     end
 
     it "should allow zipping over an arbitrary structure" do
-      z = Zipper.zip_on([1, [2, 3], 4], Proc.new {|x| x.kind_of? Array}, Proc.new {|x| x}, Proc.new {|x,kids| :as_yet_unused })
+      z = Zipper.zip_on([1, [2, 3], 4], ->x{x.kind_of? Array}, ->x{x}, -> x,kids { :as_yet_unused })
       z1 = z.down
       z1.value.should == 1
       z2 = z1.right
@@ -49,7 +49,7 @@ module Zipr
     end
 
     it "should have unsafe down fail on a leaf" do
-      lambda {
+      ->{
         Leaf.new(1).zipper.down
       }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :down_at_leaf"
@@ -90,7 +90,7 @@ module Zipr
     end
 
     it "should have unsafe up on the root node fail" do
-      lambda {
+      ->{
         Leaf.new(1).zipper.up
       }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :up_at_root"
@@ -129,7 +129,7 @@ module Zipr
 
     it "should have unsafe left fail on root node" do
       t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
-      lambda {
+      ->{
         t.zipper.left
       }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :left_at_root"
@@ -154,7 +154,7 @@ module Zipr
 
     it "should have unsafe left fail on a leftmost child" do
       t = Node.new(1, [Leaf.new(1)])
-      lambda {
+      ->{
         z = t.zipper.down.left
       }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :left_at_leftmost"
@@ -189,7 +189,7 @@ module Zipr
 
     it "should have unsafe right fail on root node" do
       t = Node.new(2, [Leaf.new(1), Leaf.new(2)])
-      lambda {
+      ->{
         t.zipper.right
       }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :right_at_root"
@@ -216,7 +216,7 @@ module Zipr
     it "should have unsafe right fail on the rightmost child" do
       t = Node.new(1, [Leaf.new(1)])
       z = t.zipper.down
-      lambda {
+      ->{
         z.right
       }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :right_at_rightmost"
@@ -445,7 +445,7 @@ module Zipr
     end
 
     it "should have unsafe delete at root fail" do
-      lambda {
+      ->{
         Tree.new(1, []).zipper.remove
       }.should raise_error(ZipperNavigationError) {|e|
         e.to_s.should == "Navigation error - :remove_at_root"
