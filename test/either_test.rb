@@ -39,6 +39,14 @@ module Zipr
       }
     end
 
+    it "should have Rights of things not == Lefts of things" do
+      property_of {
+        any
+      }.check { |thing|
+        Right.new(thing).should_not == Left.new(thing)
+      }
+    end
+
     it "should have hashes of Rights of == things be ==" do
       property_of {
         any
@@ -74,6 +82,14 @@ module Zipr
         [i, j]
       }.check { |thing1, thing2|
         Left.new(thing1).should_not == Left.new(thing2)
+      }
+    end
+
+    it "should have Rights of things not == Lefts of things" do
+      property_of {
+        any
+      }.check { |thing|
+        Left.new(thing).should_not == Right.new(thing)
       }
     end
 
@@ -122,6 +138,12 @@ module Zipr
 
     it "should return the result of either's second argument when Left" do
       Left.new(:foo).either(->x{raise "This is the wrong Proc."}, ->x{x}).should == :foo
+    end
+
+    it "should raise an exception if you try run Either.either" do
+      ->{
+        Either.new.either(->x{x}, ->x{x})
+      }.should raise_error(UnsupportedOperation)
     end
 
     it "should not run :then when given a Left" do
