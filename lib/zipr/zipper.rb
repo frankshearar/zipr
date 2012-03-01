@@ -425,7 +425,7 @@ module Zipr
     end
 
     def next
-      raise UnsupportedOperation.new(:next, node)
+      raise UnsupportedOperation.new(:next, self)
     end
   end
 

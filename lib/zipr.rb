@@ -7,3 +7,9 @@ def sexp_loaded
     false
   end
 end
+
+require 'zipr/either'
+require 'zipr/enumerable-extensions'
+require 'zipr/trampoline'
+require 'zipr/unsupported-operation'
+require 'zipr/zipper'

@@ -17,6 +17,30 @@ module Zipr
       z3.safe_down.should be_left
     end
 
+    it "should throw meaningful errors when branch fn is not useful" do
+      bad_arg = 1
+      node = []
+      z = Zipper.zip_on([], bad_arg, ->x{x}, ->x,kids{x})
+      ->{
+        z.branch?(node)
+      }.should raise_error(UnsupportedOperation) { |e|
+        e.to_s.index(:branch?.to_s).should_not be_nil
+        e.to_s.index(node.class.name).should_not be_nil
+      }
+    end
+
+    it "should throw meaningful errors when children fn is not useful" do
+      bad_arg = 1
+      node = []
+      z = Zipper.zip_on([], ->x{x}, bad_arg, ->x,kids{x})
+      ->{
+        z.children(node)
+      }.should raise_error(UnsupportedOperation) { |e|
+        e.to_s.index(:children.to_s).should_not be_nil
+        e.to_s.index(node.class.name).should_not be_nil
+      }
+    end
+
     it "should record an error going down on a leaf" do
       l = Leaf.new(1)
       loc = l.zipper
@@ -564,6 +588,14 @@ module Zipr
     end
   end
 
+  describe Traversal do
+    it "should inform you that you need to implement :next" do
+      ->{
+        Traversal.new([].zipper).next
+      }.should raise_error(UnsupportedOperation)
+    end
+  end
+
   describe PreOrderTraversal do
     it "should process all nodes in a pre-order fashion" do
       tree = Tree.new(1, [Tree.new(2, [Tree.new(3, [])]),
@@ -575,6 +607,13 @@ module Zipr
         answers << value.value
       }
       answers.should == [1, 2, 3, 4, 5, 6]
+    end
+
+    it "should return the end of traversal when at the end of a traversal" do
+      z = [].zipper
+      faked_end_z = z.new_zipper(1, EndOfTraversalContext.new(z.context))
+      t = PreOrderTraversal.new(faked_end_z)
+      t.next.should == faked_end_z
     end
 
     it "should have map produce a structure of the same shape" do
@@ -641,6 +680,43 @@ module Zipr
       it "should return a RootContext unchanged" do
         c = Context.root_context
         c.equal?(c.copy_as_changed).should be_true
+      end
+    end
+
+    describe :debug_string do
+      before(:each) {
+        @path = Context.root_context
+        @parent_nodes = [1]
+        @left_nodes = [2,3]
+        @right_nodes = [4,5]
+        @changed = true
+        @value = 6
+        @c = Context.new(@path, @parent_nodes, @left_nodes, @right_nodes, @changed)
+        @s = @c.debug_string(@value)
+      }
+
+      it "should contain changed/not changed information" do
+        @s.index(@changed.inspect).should_not be_nil
+      end
+
+      it "should contain context specific information" do
+        @s.index(@c.class.name).should_not be_nil
+      end
+
+      it "should contain left_node information" do
+        @s.index(@left_nodes.map{|c|c.to_s}.join(",")).should_not be_nil
+      end
+
+      it "should contain parent_node information" do
+        @s.index(@parent_nodes.to_s).should_not be_nil
+      end
+
+      it "should contain right_node information" do
+        @s.index(@right_nodes.map{|c|c.to_s}.join(",")).should_not be_nil
+      end
+
+      it "should contain value information" do
+        @s.index(@value.inspect).should_not be_nil
       end
     end
   end

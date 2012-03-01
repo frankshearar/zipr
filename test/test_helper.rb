@@ -3,9 +3,7 @@ SimpleCov.start 'test_frameworks'
 
 require 'rantly/property'
 require 'rspec'
-require 'zipr/either'
-require 'zipr/enumerable-extensions'
+require 'zipr'
+
 require 'zipr/rantly-extensions'
 require 'zipr/test-trees'
-require 'zipr/trampoline'
-require 'zipr/zipper'
