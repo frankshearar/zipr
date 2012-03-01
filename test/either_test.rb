@@ -1,6 +1,4 @@
-require 'zipr/either'
-require 'zipr/rantly-extensions'
-require 'rspec'
+require_relative 'test_helper'
 
 module Zipr
   describe Either do

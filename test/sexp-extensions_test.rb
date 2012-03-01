@@ -1,4 +1,4 @@
-require 'zipr'
+require_relative 'test_helper'
 
 if sexp_loaded then
   require 'zipr/enumerable-extensions'

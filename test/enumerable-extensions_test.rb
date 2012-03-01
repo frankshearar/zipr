@@ -1,6 +1,4 @@
-require 'zipr/enumerable-extensions'
-require 'zipr/zipper'
-require 'rspec'
+require_relative 'test_helper'
 
 describe Enumerable do
   describe "creating a zipper" do

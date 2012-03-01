@@ -1,7 +1,4 @@
-require 'rantly/property'
-require 'rspec'
-require 'zipr/rantly-extensions'
-require 'zipr/test-trees'
+require_relative 'test_helper'
 
 module Zipr
   describe TaggedTree do
