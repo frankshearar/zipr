@@ -1,5 +1,15 @@
 require_relative 'test_helper'
 
+# Needing coverage:
+# * Tree.to_s
+# * Tree == not tree
+# * Tree hash
+# * Tree mknode
+# * TaggedTree zipper mknode on no-children tree (line 54)
+# * TaggedTree == not tree
+# * Leaf == not leaf
+# * EmptyTree == not tree
+
 module Zipr
   describe TaggedTree do
     it "should generate different trees" do
@@ -12,6 +22,114 @@ module Zipr
       trees.zip(trees.drop(1) + trees.take(1)) { |i, j|
         i.should_not == j
       }
+    end
+
+    describe "Zipper methods" do
+      it "mknode returns a TaggedTree when given a non-TaggedTree" do
+        t = Tree.new(1, [])
+        t.zipper.mknode(1, []).should == Tree.new(1, [])
+        t.zipper.mknode(1, [Tree.new(2, [])]).should == Tree.new(1, [Tree.new(2, [])])
+      end
+
+      it "mknode returns a TaggedTree when given a non-TaggedTree" do
+        t = Tree.new(1, [])
+        t.zipper.mknode(Tree.new(1, []), []).should == Tree.new(1, [])
+        t.zipper.mknode(Tree.new(1, []), [Tree.new(2, [])]).should == Tree.new(1, [Tree.new(2, [])])
+      end
+    end
+
+    describe :== do
+      it "should be true for isomorphic trees" do
+        x = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        y = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        x.should == y
+        y.should == x
+      end
+
+      it "should be false for trees with different values" do
+        x = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        y = Tree.new(2, [Tree.new(2, []), Tree.new(3, [])])
+        x.should_not == y
+        y.should_not == x
+      end
+
+      it "should be false for trees with different values in children" do
+        x = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        y = Tree.new(1, [Tree.new(3, []), Tree.new(3, [])])
+        x.should_not == y
+        y.should_not == x
+      end
+
+      it "should be false for non-isomorphic trees" do
+        x = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        y = Tree.new(2, [Tree.new(2, [])])
+        x.should_not == y
+        y.should_not == x
+      end
+
+      it "should be reflexive" do
+        property_of {
+          tree
+        }.check {|t|
+          t.should == t
+        }
+      end
+
+      it "should not equal random nonsense" do
+      property_of {
+        choose(integer, string, boolean)
+      }.check {|random_nonsense|
+        Tree.new(1, []).should_not == random_nonsense
+      }
+      end
+    end
+
+    describe :hash do
+      it "should be true for isomorphic trees" do
+        x = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        y = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        x.hash.should == y.hash
+        y.hash.should == x.hash
+      end
+
+      it "should be false for trees with different values" do
+        x = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        y = Tree.new(2, [Tree.new(2, []), Tree.new(3, [])])
+        x.hash.should_not == y.hash
+        y.hash.should_not == x.hash
+      end
+
+      it "should be false for trees with different values in children" do
+        x = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        y = Tree.new(1, [Tree.new(3, []), Tree.new(3, [])])
+        x.hash.should_not == y.hash
+        y.hash.should_not == x.hash
+      end
+
+      it "should be false for non-isomorphic trees" do
+        x = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
+        y = Tree.new(2, [Tree.new(2, [])])
+        x.hash.should_not == y.hash
+        y.hash.should_not == x.hash
+      end
+
+      it "should be reflexive" do
+        property_of {
+          tree
+        }.check {|t|
+          t.hash.should == t.hash
+        }
+      end
+    end
+
+    describe :to_s do
+      it "should print empty trees" do
+        Tree.new(1, []).to_s.should == '1'
+      end
+
+      it "should print trees with children" do
+        Tree.new(1, [Tree.new(2, []), Tree.new(3, [])]).to_s.should == '1 [2, 3]'
+      end
     end
   end
 
@@ -71,6 +189,14 @@ module Zipr
 
     it "should not == tree with different children" do
       Node.new(1, []).should_not == Node.new(1, [Leaf.value(1)])
+    end
+
+    it "should not == random nonsense" do
+      property_of {
+        choose(integer, string, boolean)
+      }.check {|random_nonsense|
+        Node.new(1, []).should_not == random_nonsense
+      }
     end
 
     it "should have == hash to an equivalent tree" do
@@ -142,6 +268,14 @@ module Zipr
       }
     end
 
+    it "should not == random nonsense" do
+      property_of {
+        choose(integer, string, boolean)
+      }.check {|random_nonsense|
+        Leaf.value(1).should_not == random_nonsense
+      }
+    end
+
     it "should have == things have the same hash" do
       property_of {
         choose(integer, string, boolean)
@@ -173,6 +307,14 @@ module Zipr
   describe EmptyTree do
     it "should == another EmptyTree" do
       EmptyTree.new.should == EmptyTree.new
+    end
+
+    it "should not == random nonsense" do
+      property_of {
+        choose(integer, string, boolean)
+      }.check {|random_nonsense|
+        EmptyTree.new.should_not == random_nonsense
+      }
     end
 
     it "should have == hash to another EmptyTree" do

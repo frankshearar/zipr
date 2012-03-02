@@ -50,11 +50,10 @@ module Zipr
 
     def zipper
       mknode = -> value,children {
-        if children.empty? then
-          Leaf.new(value)
-        else
-          Node.new(value.tag, children)
-        end
+        # The original implementation of this block could return a Leaf.
+        # However, mknode's only called on an up, so by definition can
+        # only return an interior node - a Node.
+        Node.new(value.tag, children)
       }
 
       Zipper.zip_on(self, :branch?, :children, mknode)
