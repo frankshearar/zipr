@@ -12,16 +12,18 @@ require_relative 'test_helper'
 
 module Zipr
   describe TaggedTree do
-    it "should generate different trees" do
-      trees = []
-      property_of {
-        sized(50) { tree }
-      }.check {|t|
-        trees << t
-      }
-      trees.zip(trees.drop(1) + trees.take(1)) { |i, j|
-        i.should_not == j
-      }
+    describe "rantly extensions" do
+      it "should generate different trees" do
+        trees = []
+        property_of {
+          sized(50) { tree }
+        }.check {|t|
+          trees << t
+        }
+        trees.zip(trees.drop(1) + trees.take(1)) { |i, j|
+          i.should_not == j
+        }
+      end
     end
 
     describe "Zipper methods" do
