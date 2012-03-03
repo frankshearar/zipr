@@ -1,15 +1,5 @@
 require_relative 'test_helper'
 
-# Needing coverage:
-# * Tree.to_s
-# * Tree == not tree
-# * Tree hash
-# * Tree mknode
-# * TaggedTree zipper mknode on no-children tree (line 54)
-# * TaggedTree == not tree
-# * Leaf == not leaf
-# * EmptyTree == not tree
-
 module Zipr
   describe TaggedTree do
     describe "rantly extensions" do
