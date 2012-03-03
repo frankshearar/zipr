@@ -84,6 +84,14 @@ module Zipr
         Tree.new(1, []).should_not == random_nonsense
       }
       end
+
+      it "should not equal nil" do
+        property_of {
+          tree
+        }.check {|t|
+          t.should_not == nil
+        }
+      end
     end
 
     describe :hash do
@@ -201,6 +209,10 @@ module Zipr
       }
     end
 
+    it "should not == nil" do
+      Node.new(1, []).should_not == nil
+    end
+
     it "should have == hash to an equivalent tree" do
       Node.new(:foo, []).hash.should == Node.new(:foo, []).hash
       Node.new(:foo, [Leaf.value(1)]).hash.should == Node.new(:foo, [Leaf.value(1)]).hash
@@ -278,6 +290,10 @@ module Zipr
       }
     end
 
+    it "should not == nil" do
+      Leaf.value(1).should_not == nil
+    end
+
     it "should have == things have the same hash" do
       property_of {
         choose(integer, string, boolean)
@@ -317,6 +333,10 @@ module Zipr
       }.check {|random_nonsense|
         EmptyTree.new.should_not == random_nonsense
       }
+    end
+
+    it "should not == nil" do
+      EmptyTree.new.should_not == nil
     end
 
     it "should have == hash to another EmptyTree" do
