@@ -86,8 +86,7 @@ module Zipr
     end
 
     def down
-      safe_down.either(->z{z},
-                       ->e{raise ZipperNavigationError.new(e.error)})
+      safe_down.either(Id, RaiseNavigationError)
     end
 
     def fold(initial_value, traversal = PreOrderTraversal.new(self), &binary_block)
@@ -95,8 +94,7 @@ module Zipr
     end
 
     def left
-      safe_left.either(->z{z},
-                       ->e{raise ZipperNavigationError.new(e.error)})
+      safe_left.either(Id, RaiseNavigationError)
     end
 
     def leftmost
@@ -104,8 +102,7 @@ module Zipr
     end
 
     def right
-      safe_right.either(->z{z},
-                        ->e{raise ZipperNavigationError.new(e.error)})
+      safe_right.either(Id, RaiseNavigationError)
     end
 
     def rightmost
@@ -113,8 +110,7 @@ module Zipr
     end
 
     def up
-      safe_up.either(->z{z},
-                     ->e{raise ZipperNavigationError.new(e.error)})
+      safe_up.either(Id, RaiseNavigationError)
     end
 
     alias :inject :fold
@@ -142,8 +138,7 @@ module Zipr
     alias :collect :map
 
     def remove
-      safe_remove.either(->z{z},
-                         ->e{raise ZipperNavigationError.new(e.error)})
+      safe_remove.either(Id, RaiseNavigationError)
     end
 
     def replace(new_node)
@@ -627,4 +622,10 @@ module Zipr
       "Navigation error - #{error.inspect}"
     end
   end
+
+  # Using functors lets us support the different Proc syntaxes for
+  # Ruby 1.8 and 1.9 a bit easier: the noise involved in porting
+  # between the languages is constrained. At least, it works for
+  # some places (places that don't close over anything).
+  RaiseNavigationError = ->e{raise ZipperNavigationError.new(e.error)}
 end
