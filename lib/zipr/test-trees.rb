@@ -32,7 +32,7 @@ module Zipr
     end
 
     def zipper
-      mknode = Proc.new {|value,children|
+      mknode = -> value,children {
         case value
           when Tree then Tree.new(value.value, children)
           else Tree.new(value, children)
@@ -49,12 +49,11 @@ module Zipr
     end
 
     def zipper
-      mknode = Proc.new {|value,children|
-        if children.empty? then
-          Leaf.new(value)
-        else
-          Node.new(value.tag, children)
-        end
+      mknode = -> value,children {
+        # The original implementation of this block could return a Leaf.
+        # However, mknode's only called on an up, so by definition can
+        # only return an interior node - a Node.
+        Node.new(value.tag, children)
       }
 
       Zipper.zip_on(self, :branch?, :children, mknode)

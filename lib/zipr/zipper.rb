@@ -86,8 +86,7 @@ module Zipr
     end
 
     def down
-      safe_down.either(Proc.new {|z| z},
-                       Proc.new {|e| raise ZipperNavigationError.new(e.error)})
+      safe_down.either(Id, RaiseNavigationError)
     end
 
     def fold(initial_value, traversal = PreOrderTraversal.new(self), &binary_block)
@@ -95,8 +94,7 @@ module Zipr
     end
 
     def left
-      safe_left.either(Proc.new {|z| z},
-                       Proc.new {|e| raise ZipperNavigationError.new(e.error)})
+      safe_left.either(Id, RaiseNavigationError)
     end
 
     def leftmost
@@ -104,8 +102,7 @@ module Zipr
     end
 
     def right
-      safe_right.either(Proc.new {|z| z},
-                        Proc.new {|e| raise ZipperNavigationError.new(e.error)})
+      safe_right.either(Id, RaiseNavigationError)
     end
 
     def rightmost
@@ -113,8 +110,7 @@ module Zipr
     end
 
     def up
-      safe_up.either(Proc.new {|z| z},
-                     Proc.new {|e| raise ZipperNavigationError.new(e.error)})
+      safe_up.either(Id, RaiseNavigationError)
     end
 
     alias :inject :fold
@@ -142,8 +138,7 @@ module Zipr
     alias :collect :map
 
     def remove
-      safe_remove.either(Proc.new {|z| z},
-                         Proc.new {|e| raise ZipperNavigationError.new(e.error)})
+      safe_remove.either(Id, RaiseNavigationError)
     end
 
     def replace(new_node)
@@ -316,8 +311,8 @@ module Zipr
                                                       true)))
         else
           prev = trampoline(remove_then_left) {|z|
-            z.safe_down.either(Proc.new {|child| child.rightmost},
-                               Proc.new {|e| z })
+            z.safe_down.either(->child{child.rightmost},
+                               ->e{z})
           }
           Right.new(prev)
         end
@@ -425,7 +420,7 @@ module Zipr
     end
 
     def next
-      raise UnsupportedOperation.new(:next, node)
+      raise UnsupportedOperation.new(:next, self)
     end
   end
 
@@ -459,12 +454,12 @@ module Zipr
       # that runs in constant space.
       trampoline(@zipper) {|z|
         parent = z.safe_up
-        parent.either(Proc.new {|parent_z|
+        parent.either(->parent_z{
                         uncle = parent_z.safe_right
-                        uncle.either(Proc.new {|z| next z},
-                              Proc.new {|unused_error| next lambda {parent_z}}) # Recur
+                        uncle.either(->z{next z},
+                                     ->unused_error{next ->{parent_z}}) # Recur
                       },
-               Proc.new {|unused_error|
+                      ->unused_error{
                         # We've popped up the structure all the way to the root node.
                         z.new_zipper(z.value, EndOfTraversalContext.new(z.context))
                       })
@@ -495,11 +490,11 @@ module Zipr
 
     def enqueue_unmarked_children(zipper)
       trampoline(zipper.safe_down) { | z_lr |
-        z_lr.either(Proc.new { |z|
+        z_lr.either(->z{
                       @queue << z unless @visited.include?(z.value)
-                      next Proc.new {z.safe_right}
+                      next ->{z.safe_right}
                     },
-                    Proc.new { |unused_error| next unused_error.location})
+                    ->unused_error{next unused_error.location})
       }
     end
   end
@@ -563,10 +558,12 @@ module Zipr
     end
 
     def debug_string(value)
-      ["left: [#{left_nodes.map{|c|c.to_s}.join(",")}]",
+      ["type: #{self.class.name}",
+       "left: [#{left_nodes.map{|c|c.to_s}.join(",")}]",
        "value: #{value.to_s}",
        "right: [#{right_nodes.map{|c|c.to_s}.join(",")}]",
-       "parents: #{parent_nodes.to_s}"].join(", ")
+       "parents: #{parent_nodes.to_s}",
+       "changed: #{@changed.inspect}"].join(", ")
     end
   end
 
@@ -625,4 +622,10 @@ module Zipr
       "Navigation error - #{error.inspect}"
     end
   end
+
+  # Using functors lets us support the different Proc syntaxes for
+  # Ruby 1.8 and 1.9 a bit easier: the noise involved in porting
+  # between the languages is constrained. At least, it works for
+  # some places (places that don't close over anything).
+  RaiseNavigationError = ->e{raise ZipperNavigationError.new(e.error)}
 end

@@ -1,6 +1,4 @@
-require 'zipr/either'
-require 'zipr/rantly-extensions'
-require 'rspec'
+require_relative 'test_helper'
 
 module Zipr
   describe Either do
@@ -38,6 +36,14 @@ module Zipr
         [i, j]
       }.check { |thing1, thing2|
         Right.new(thing1).should_not == Right.new(thing2)
+      }
+    end
+
+    it "should have Rights of things not == Lefts of things" do
+      property_of {
+        any
+      }.check { |thing|
+        Right.new(thing).should_not == Left.new(thing)
       }
     end
 
@@ -79,6 +85,14 @@ module Zipr
       }
     end
 
+    it "should have Rights of things not == Lefts of things" do
+      property_of {
+        any
+      }.check { |thing|
+        Left.new(thing).should_not == Right.new(thing)
+      }
+    end
+
     it "should have hashes of Lefts of == things be ==" do
       property_of {
         any
@@ -107,23 +121,29 @@ module Zipr
     end
 
     it "should run the first argument of either when Right" do
-      lambda {
-        Right.new(1).either(Proc.new { |x| x}, Proc.new { |x| raise "This is the wrong Proc."})
+      ->{
+        Right.new(1).either(->x{x}, ->x{raise "This is the wrong Proc."})
       }.should_not raise_error
     end
 
     it "should return the result of either's first argument when Right" do
-      Right.new(1).either(Proc.new { |x| x}, Proc.new { |x| raise "This is the wrong Proc."}).should == 1
+      Right.new(1).either(->x{x}, ->x{raise "This is the wrong Proc."}).should == 1
     end
 
     it "should run the second argument of either when Left" do
-      lambda {
-        Left.new(:foo).either(Proc.new { |x| raise "This is the wrong Proc."}, Proc.new { |x| x})
+      ->{
+        Left.new(:foo).either(->x{raise "This is the wrong Proc."}, ->x{x})
       }.should_not raise_error
     end
 
     it "should return the result of either's second argument when Left" do
-      Left.new(:foo).either(Proc.new { |x| raise "This is the wrong Proc."}, Proc.new { |x| x}).should == :foo
+      Left.new(:foo).either(->x{raise "This is the wrong Proc."}, ->x{x}).should == :foo
+    end
+
+    it "should raise an exception if you try run Either.either" do
+      ->{
+        Either.new.either(->x{x}, ->x{x})
+      }.should raise_error(UnsupportedOperation)
     end
 
     it "should not run :then when given a Left" do
@@ -160,8 +180,8 @@ module Zipr
     end
 
     it "should not allow calling :then with both proc and block" do
-      lambda {
-        Right.new(1).then(Proc.new { |x| x + 1}) {|i| i + 1}
+      ->{
+        Right.new(1).then(->x{x + 1}) {|i| i + 1}
       }.should raise_error(ArgumentError) {|e|
         e.to_s.should include("Proc")
         e.to_s.should include("both")
@@ -170,7 +190,7 @@ module Zipr
     end
 
     it "should not allow calling :then with neither a proc nor a block" do
-      lambda {
+      ->{
         Right.new(1).then
       }.should raise_error(ArgumentError) {|e|
         e.to_s.should include("Proc")
@@ -180,7 +200,7 @@ module Zipr
     end
 
     it "should obey the first monadic law: left identity" do
-      double = Proc.new { |x| Right.new(x + x)}
+      double = ->x{Right.new(x + x)}
       property_of {
         thing = any
         guard(thing.respond_to?(:+))
@@ -191,7 +211,7 @@ module Zipr
     end
 
     it "should obey the second monadic law: right identity" do
-      return_fn = Proc.new { |x| Right.new(x)}
+      return_fn = ->x{Right.new(x)}
       property_of {
         thing = any
         guard(thing.respond_to?(:+))
@@ -203,13 +223,13 @@ module Zipr
     end
 
     it "should obey the third monadic law: associativity" do
-      double = Proc.new { |x| Right.new(x + x)}
-      add_2 = Proc.new { |x| Right.new(x + 2)}
+      double = ->x{Right.new(x + x)}
+      add_2 = ->x{Right.new(x + 2)}
       property_of {
         any
       }.check { |thing|
         m = Right.new(1)
-        (m.then(double)).then(add_2).should == m.then(Proc.new { |x| double.call(x).then(add_2)})
+        (m.then(double)).then(add_2).should == m.then(->x{double.call(x).then(add_2)})
       }
     end
   end

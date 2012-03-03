@@ -1,8 +1,4 @@
-require 'zipr/zipper'
-require 'zipr/test-trees'
-require 'rantly/property'
-require 'rspec'
-require 'zipr/rantly-extensions'
+require 'test_helper'
 
 module Zipr
   describe "Zipper stress tests" do
