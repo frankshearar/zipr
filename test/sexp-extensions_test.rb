@@ -1,9 +1,6 @@
-require_relative 'test_helper'
+require 'test/test_helper'
 
 if sexp_loaded then
-  require 'zipr/enumerable-extensions'
-  require 'zipr/zipper'
-
   describe Sexp do
     describe "creating a zipper" do
       s().zipper.class.should == Zipr::Zipper

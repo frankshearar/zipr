@@ -1,4 +1,4 @@
-require 'test_helper'
+require 'test/test_helper'
 
 module Zipr
   describe "Zipper stress tests" do
