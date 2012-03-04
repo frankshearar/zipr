@@ -1,4 +1,4 @@
-require_relative 'test_helper'
+require 'test/test_helper'
 
 module Zipr
   describe UnsupportedOperation do
