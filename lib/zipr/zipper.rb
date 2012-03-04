@@ -311,8 +311,8 @@ module Zipr
                                                       true)))
         else
           prev = trampoline(remove_then_left) {|z|
-            z.safe_down.either(->child{child.rightmost},
-                               ->e{z})
+            z.safe_down.either(Proc.new{|child| child.rightmost},
+                               Proc.new{|e| z})
           }
           Right.new(prev)
         end
@@ -454,12 +454,12 @@ module Zipr
       # that runs in constant space.
       trampoline(@zipper) {|z|
         parent = z.safe_up
-        parent.either(->parent_z{
+        parent.either(Proc.new { |parent_z|
                         uncle = parent_z.safe_right
-                        uncle.either(->z{next z},
-                                     ->unused_error{next ->{parent_z}}) # Recur
+                        uncle.either(Proc.new{|z| next z},
+                                     Proc.new{|unused_error| next Proc.new{parent_z}}) # Recur
                       },
-                      ->unused_error{
+                      Proc.new{|unused_error|
                         # We've popped up the structure all the way to the root node.
                         z.new_zipper(z.value, EndOfTraversalContext.new(z.context))
                       })
@@ -490,11 +490,11 @@ module Zipr
 
     def enqueue_unmarked_children(zipper)
       trampoline(zipper.safe_down) { | z_lr |
-        z_lr.either(->z{
+        z_lr.either(Proc.new{ |z|
                       @queue << z unless @visited.include?(z.value)
-                      next ->{z.safe_right}
+                      next Proc.new{z.safe_right}
                     },
-                    ->unused_error{next unused_error.location})
+                    Proc.new{|unused_error| next unused_error.location})
       }
     end
   end
@@ -627,5 +627,5 @@ module Zipr
   # Ruby 1.8 and 1.9 a bit easier: the noise involved in porting
   # between the languages is constrained. At least, it works for
   # some places (places that don't close over anything).
-  RaiseNavigationError = ->e{raise ZipperNavigationError.new(e.error)}
+  RaiseNavigationError = Proc.new{|e| raise ZipperNavigationError.new(e.error)}
 end

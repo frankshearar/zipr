@@ -1,3 +1,3 @@
 module Zipr
-  Id = ->x{x}
+  Id = Proc.new{|x| x}
 end
