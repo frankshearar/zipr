@@ -10,7 +10,7 @@ require 'rcov/rcovtask'
 CLEAN.include('pkg')
 
 RSpec::Core::RakeTask.new(:test) do |test|
-  test.pattern = 'test/test*.rb'
+  test.pattern = 'test/*_test.rb'
   test.verbose = true
 end
 
