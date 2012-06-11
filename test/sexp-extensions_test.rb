@@ -1,4 +1,4 @@
-require './test_helper'
+require_relative 'test_helper'
 
 if sexp_loaded then
   describe Sexp do
