@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/frankshearar/zipr.png?branch=master)](http://travis-ci.org/frankshearar/zipr)
+
 A [Huet-style zipper](http://www.st.cs.uni-saarland.de/edu/seminare/2005/advanced-fp/docs/huet-zipper.pdf) written in Ruby.
 
 Basic architecture
