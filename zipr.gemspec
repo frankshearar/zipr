@@ -2,6 +2,7 @@ PKG_VERSION = '0.1.dev'
 
 Gem::Specification.new do |s|
   # These dependencies appear in the Gemfile.
+  s.add_development_dependency('rake', '~> 0.9.2')
   s.add_development_dependency('rantly', '~> 0.3.1')
   s.add_development_dependency('rspec', '~> 2.7.0')
 
