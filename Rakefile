@@ -23,7 +23,7 @@ Gem::PackageTask.new(gemspec) do |pkg|
   pkg.need_tar = true
 end
 
-task :default => :install
+task :default => :test
 
 task :stress_test
 
