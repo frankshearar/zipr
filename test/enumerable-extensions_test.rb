@@ -1,4 +1,4 @@
-require 'test/test_helper'
+require './test_helper'
 
 describe Enumerable do
   describe "creating a zipper" do
