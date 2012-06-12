@@ -1,12 +1,13 @@
-if RUBY_VERSION =~ /1.9/ then
+if RUBY_VERSION =~ /1.8/ then
+  require 'rcov'
+else
   require 'simplecov'
   SimpleCov.start 'test_frameworks'
-else
-  require 'rcov'
 end
 
 require 'rantly/property'
 require 'rspec'
+require 'sexp'
 require 'zipr'
 
 require 'zipr/rantly-extensions'
