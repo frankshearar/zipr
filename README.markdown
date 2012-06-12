@@ -5,15 +5,30 @@ A [Huet-style zipper](http://www.st.cs.uni-saarland.de/edu/seminare/2005/advance
 Basic architecture
 ------------------
 
-The framework supplies two ways of navigating through a structure. "Safe navigation" methods are named safe\_foo, and uses the `Either` monad: attempting to move off the structure returns a `Left` indicating the error; otherwise, we get a `Right` containing a `Zipper` on the next position. "Unsafe navigation" methods are just like the safe ones, only without a "safe\_" prefix.
+Zipr supplies two ways of navigating through a structure. "Safe navigation" methods are named safe\_foo, and uses the `Either` monad: attempting to move off the structure returns a `Left` indicating the error; otherwise, we get a `Right` containing a `Zipper` on the next position. "Unsafe navigation" methods are just like the safe ones, only without a "safe\_" prefix.
 
-Unsafe navigation's suited for when you know the precise path to some node, allowing for terse code:
+Unsafe navigation is best suited for when you know the precise path to some node, allowing for terse code:
 
     t = Tree.new(1, [Tree.new(2, []), Tree.new(3, [])])
     z = t.zipper.down.down
     z.value.should == 2
 
-Safe navigation's suited for exploring a structure whose structure you don't know.
+Safe navigation is best suited for exploring a structure whose structure you don't know. To safely navigate to the rightmost grandchild of a node (or stay in the current location if there's no such node):
+
+    z = a_node_in_some_arbitrary_tree.zipper
+    z.safe_down.either(->l{
+                         l.safe_right.either(->r{
+                                               r.safe_down.either(->rl{
+                                                                    rl.safe_right(->rr{rr},
+                                                                                  ->error{z})
+                                                                  },
+                                                                  ->error{z}),
+                                             },
+                                             ->error{z}),
+                       },
+                       ->error{z})
+
+A bit of a mouthful, but consider that we have handled every possible case: no left child, no right child, no left-of-right grandchild, and no right-of-right grandchild. If the node has a right-of-right grandchild, we will have a Right whose :value will be the desired node. If not, we will have a Left whose :error will tell us what went wrong. (By using `->error{[error, z]}` we could tell the caller which node was missing.)
 
 When we create the zipper, we give it:
 
@@ -31,6 +46,10 @@ Those three behaviours may be a Proc or a Symbol naming a method:
     Zipper.new(t, RootContext.new, ->x{!x.children.empty?}, :children, mknode)
 
 The sample structures provide their own convenience `:zipper` methods.
+
+Advanced features
+-----------------
+Zipr supplies many higher-order features. Not only may you arbitrarily navigate a structure, Zipr also supplies a `PreOrderTraversal` (unsafe in the presence of cycles). Zipr uses this traversal to `fold` or `map` arbitrary structures. In particular, `map` returns the same kind of structure: if you have some kind of custom tree, `map` will return that same kind of tree. This is unlike `Enumerable`'s `map`, which flattens the structure into an `Array`.
 
 Licence
 -------
