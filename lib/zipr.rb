@@ -1,11 +1,5 @@
 def sexp_loaded
-  begin
-    require 'sexp'
-    true
-  rescue LoadError
-    # No sexp gem loaded. Oh well.
-    false
-  end
+  Kernel::const_defined?(:Sexp)
 end
 
 require 'zipr/either'

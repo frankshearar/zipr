@@ -7,6 +7,7 @@ end
 
 require 'rantly/property'
 require 'rspec'
+require 'sexp'
 require 'zipr'
 
 require 'zipr/rantly-extensions'
