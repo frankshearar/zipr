@@ -6,6 +6,8 @@ module Zipr
   # A zipper is a data structure consisting of a value (representing some place
   # in some data structure) and a context (the rest of the structure, or the
   # hole into which you plug the value to have the original structure once more).
+  # This context also contains the route by which you ended up at this place in
+  # the structure.
   #
   # You may think of a zipper as a suspended walk - that is, as a means of
   # navigating and mutating a data structure such that at any point you can store
@@ -22,8 +24,8 @@ module Zipr
   # a Left if the action is impossible (for instance, trying to move down on a
   # leaf node of a tree). An unsafe operation simply raises a
   # ZipperNavigationError in the event of an impossible action. Unsafe operations
-  # provide a terser navigation, at the risk of raising an exception. A chain of
-  # safe operations simply returns the first error encountered.
+  # provide a more terse navigation, at the risk of raising an exception. A chain
+  # of safe operations simply returns the first error encountered.
   class Zipper
     include Boing
 
