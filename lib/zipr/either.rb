@@ -47,9 +47,9 @@ module Zipr
 
     def then(unary_block = nil, &given_unary_block)
       if unary_block.nil? and not block_given? then
-        raise ArgumentError.new("Cannot invoke :then with neither a Proc and a block")
+        raise ArgumentError.new("Cannot invoke :then with neither a Proc nor a block")
       end
-      
+
       if unary_block.nil? then
         given_unary_block.call(value)
       elsif not block_given? then
@@ -62,7 +62,7 @@ module Zipr
 
   class Left < Either
     attr_reader :error
-    
+
     def initialize(symbol)
       @error = symbol
     end
