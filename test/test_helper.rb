@@ -3,6 +3,8 @@ if RUBY_VERSION =~ /1.8/ then
 else
   require 'simplecov'
   SimpleCov.start 'test_frameworks'
+  require 'coveralls'
+  Coveralls.wear!
 end
 
 require 'rantly/property'

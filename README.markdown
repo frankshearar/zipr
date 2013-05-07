@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/frankshearar/zipr.png?branch=master)](http://travis-ci.org/frankshearar/zipr)
+[![Build Status](https://secure.travis-ci.org/frankshearar/zipr.png?branch=master)](http://travis-ci.org/frankshearar/zipr) [![Coverage Status](https://coveralls.io/repos/frankshearar/zipr/badge.png?branch=master)](https://coveralls.io/r/frankshearar/zipr)
 
 A [Huet-style zipper](http://www.st.cs.uni-saarland.de/edu/seminare/2005/advanced-fp/docs/huet-zipper.pdf) written in Ruby.
 
