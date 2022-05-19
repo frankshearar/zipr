@@ -1,5 +1,5 @@
 source "http://rubygems.org"
-gem "rake", "~> 0.9.2", :group => :test
+gem "rake", "~> 12.3.3", :group => :test
 gem "rantly", "~> 0.3.1", :group => :test
 gem "rspec", "~> 2.8.0", :group => :test
 gem "sexp_processor", "~> 3.1.0", :group => :test
